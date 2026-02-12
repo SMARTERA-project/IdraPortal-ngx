@@ -22,6 +22,12 @@ span {
 
 }
 
+.nb-tree-grid-header-cell{
+  background-color: var(--color-primary-500);
+  color: var(--text-alternate-color);
+  border: none;
+}
+
 ::ng-deep .nb-tree-grid-header-cell button{
     vertical-align: middle !important;
     display: flex !important;

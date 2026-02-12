@@ -1,29 +1,84 @@
 @use '@angular/material' as mat;
 
+// Define SmartEra custom palette
+$smartera-green-palette: (
+  50: #e3f0ed,
+  100: #b9d9d1,
+  200: #8bc0b3,
+  300: #5ca794,
+  400: #399480,
+  500: #165040,
+  600: #13743f,
+  700: #106936,
+  800: #0c5f2e,
+  900: #064c1f,
+  A100: #80ffaa,
+  A200: #4dff8a,
+  A400: #1aff6a,
+  A700: #00ff5a,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: rgba(0, 0, 0, 0.87),
+    A400: rgba(0, 0, 0, 0.87),
+    A700: rgba(0, 0, 0, 0.87),
+  )
+);
+
+$smartera-teal-palette: (
+  50: #e8f5f4,
+  100: #c5e7e4,
+  200: #9fd7d2,
+  300: #79c7c0,
+  400: #5cbbb2,
+  500: #6CB7AF,
+  600: #38a89d,
+  700: #309990,
+  800: #288a82,
+  900: #1b6e6a,
+  A100: #b2fff7,
+  A200: #7ffff2,
+  A400: #4cffed,
+  A700: #33ffea,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: rgba(0, 0, 0, 0.87),
+    600: rgba(0, 0, 0, 0.87),
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: rgba(0, 0, 0, 0.87),
+    A400: rgba(0, 0, 0, 0.87),
+    A700: rgba(0, 0, 0, 0.87),
+  )
+);
+
 @mixin angular-material() {
   @include mat.core();
 
-  @include nb-for-theme(material-dark) {
-    $custom-dark-theme: mat.define-dark-theme(
-      $primary: mat.define-palette(mat.$pink-palette),
-      $accent: mat.define-palette(mat.$blue-grey-palette)
-    );
-    @include mat.all-component-themes($custom-dark-theme);
-  }
-
-  @include nb-for-theme(material-light) {
-    $custom-light-theme: mat.define-light-theme(
-      $primary: mat.define-palette(mat.$indigo-palette),
-      $accent: mat.define-palette(mat.$pink-palette)
-    );
-    @include mat.all-component-themes($custom-light-theme);
-  }
-
-  @include nb-for-theme(material-urbanite) {
-    $custom-urbanite-theme: mat.define-light-theme(
-      $primary: mat.define-palette(mat.$light-green-palette),
-      $accent: mat.define-palette(mat.$grey-palette)
-    );
-    @include mat.all-component-themes($custom-urbanite-theme);
+  // SmartEra theme - green primary with teal accent
+  @include nb-for-theme(material-smartera) {
+    $smartera-theme: mat.define-light-theme((
+      color: (
+        primary: mat.define-palette($smartera-green-palette),
+        accent: mat.define-palette($smartera-teal-palette),
+        warn: mat.define-palette(mat.$red-palette)
+      )
+    ));
+    @include mat.all-component-themes($smartera-theme);
   }
 }

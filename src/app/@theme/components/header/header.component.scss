@@ -40,18 +40,10 @@
     align-items: center;
     margin-right: 1rem;
   }
-  
-  ::ng-deep .custom-select:hover .select-button {
-    background-color: #08aaef !important;
-  }
-  ::ng-deep .custom-select:focus .select-button {
-    background-color: #119bd6 !important;
-  }
-  ::ng-deep .custom-select:focus-visible .select-button {
-    background-color: #119bd6 !important;
-  }
-  ::ng-deep .custom-select:focus-within .select-button {
-    background-color: #119bd6 !important;
+
+
+  ::ng-deep nb-select .select-button {
+    background-color: nb-theme(color-primary-700) !important;
   }
 
   nb-action {

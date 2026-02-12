@@ -49,23 +49,28 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public languages = [];
   public themes = [
     {
-      value: 'default',
-      name: 'Light',
+      value: 'material-smartera',
+      name: 'SmartEra',
     },
+    // {
+    //   value: 'default',
+    //   name: 'Light',
+    // },
     {
       value: 'dark',
       name: 'Dark',
     },
-    {
-      value: 'cosmic',
-      name: 'Cosmic',
-    },
+    // {
+    //   value: 'cosmic',
+    //   name: 'Cosmic',
+    // },
     {
       value: 'corporate',
       name: 'Corporate',
     },
   ];
-  public currentTheme: string = 'default';
+  public currentTheme: string = 'material-smartera';
+  public logoPath: string = 'assets/images/Smart_Era_X_Idra.png';
 
   constructor(private sidebarService: NbSidebarService,
               private menuService: NbMenuService,
@@ -224,7 +229,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
   changeTheme(themeName: string) {
     this.currentTheme = themeName;
     this.themeService.changeTheme(themeName);
+    this.updateLogo(themeName);
     try { this.window?.localStorage?.setItem(this.THEME_STORAGE_KEY, themeName); } catch (e) {}
+  }
+
+  private updateLogo(themeName: string) {
+    if (themeName === 'material-smartera') {
+      this.logoPath = 'assets/images/Smart_Era_X_Idra.png';
+    } else {
+      this.logoPath = 'assets/images/idra_logo.png';
+    }
   }
 
   toggleSidebar(): boolean {

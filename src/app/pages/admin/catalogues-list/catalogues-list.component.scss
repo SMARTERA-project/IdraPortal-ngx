@@ -17,11 +17,11 @@ button[nbTreeGridRowToggle] {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
 .nb-tree-grid-header-cell{
-    //background-color: #139973;
-    background-color: #00b4ff;
-    color: white;
-    border: none;
+  background-color: var(--color-primary-500);
+  color: var(--text-alternate-color);
+  border: none;
 }
 
 .search-label {

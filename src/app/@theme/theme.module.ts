@@ -40,9 +40,7 @@ import { DEFAULT_THEME } from './styles/theme.default';
 import { COSMIC_THEME } from './styles/theme.cosmic';
 import { CORPORATE_THEME } from './styles/theme.corporate';
 import { DARK_THEME } from './styles/theme.dark';
-import { MATERIAL_LIGHT_THEME } from './styles/material/theme.material-light';
-import { MATERIAL_URBANITE } from './styles/material/theme.material-urbanite';
-import { MATERIAL_DARK_THEME } from './styles/material/theme.material-dark';
+import { MATERIAL_SMARTERA_THEME } from './styles/material/theme.material-smartera';
 
 const NB_MODULES = [
   NbLayoutModule,
@@ -88,9 +86,9 @@ export class ThemeModule {
       providers: [
         ...NbThemeModule.forRoot(
           {
-            name: 'material-urbanite',
+            name: 'material-smartera',
           },
-          [ DEFAULT_THEME, COSMIC_THEME, CORPORATE_THEME, DARK_THEME, MATERIAL_LIGHT_THEME, MATERIAL_DARK_THEME,MATERIAL_URBANITE ],
+          [ DEFAULT_THEME, COSMIC_THEME, CORPORATE_THEME, DARK_THEME, MATERIAL_SMARTERA_THEME ],
         ).providers,
       ],
     };

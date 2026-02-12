@@ -1,6 +1,18 @@
 @import './themes';
 
 @mixin nb-overrides() {
+  // ngx-pagination overrides for SmartEra theme
+  .ngx-pagination {
+    li.current {
+      background-color: nb-theme(color-primary-500) !important;
+      border-color: nb-theme(color-primary-500) !important;
+    }
+    
+    a:hover, button:hover {
+      background-color: nb-theme(color-primary-transparent-200) !important;
+    }
+  }
+
   nb-select.size-medium button {
     padding: 0.4375rem 2.2rem 0.4375rem 1.125rem !important;
 
