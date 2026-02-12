@@ -60,14 +60,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
       value: 'dark',
       name: 'Dark',
     },
-    // {
-    //   value: 'cosmic',
-    //   name: 'Cosmic',
-    // },
     {
-      value: 'corporate',
-      name: 'Corporate',
+      value: 'cosmic',
+      name: 'Cosmic',
     },
+    // {
+    //   value: 'corporate',
+    //   name: 'Corporate',
+    // },
   ];
   public currentTheme: string = 'material-smartera';
   public logoPath: string = 'assets/images/Smart_Era_X_Idra.png';
