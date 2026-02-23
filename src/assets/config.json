@@ -1,6 +1,6 @@
 {   
     "enableAuthentication":true,
-    "authenticationMethod":"basic",
+    "authenticationMethod":"keycloak",
     "idmBaseURL":"https://dx-lab.it",
     "keyCloakBaseURL": "https://dx-lab.it",
     "dashboardBaseURL":"http://localhost:4200",

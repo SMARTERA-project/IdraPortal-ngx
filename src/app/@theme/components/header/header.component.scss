@@ -2,10 +2,17 @@
 @import '@nebular/theme/styles/global/breakpoints';
 @import '../../styles/themes';
 
-@include nb-install-component() {
+:host {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
   width: 100%;
+  min-height: 100%;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+}
+
+@include nb-install-component() {
+  justify-content: space-between;
   
   .white-background {
     background-color: rgb(255, 255, 255);
@@ -33,6 +40,7 @@
     display: flex;
     align-items: center;
     margin-left: auto;
+    flex-wrap: nowrap;
   }
 
   .language-select-container {
@@ -67,6 +75,7 @@
     display: flex;
     align-items: center;
     width: auto;
+    flex-shrink: 0;
 
     .sidebar-toggle {
       @include nb-ltr(padding-right, 1.25rem);
@@ -93,6 +102,10 @@
   }
 
   @include media-breakpoint-down(sm) {
+    :host {
+      gap: 0.5rem;
+    }
+
     .control-item {
       display: none;
     }

@@ -38,7 +38,6 @@ import { environment } from '../environments/environment';
 import { OidcJWTToken } from './pages/auth/oidc/oidc';
 import { TokenInterceptor } from './pages/auth/services/token.interceptor';
 import { JwtHelperService, JwtModule } from '@auth0/angular-jwt';
-import { NbAuthModuleCustom, NbAuthSimpleInterceptor, NbPasswordAuthStrategy } from './@theme/components/auth/public_api';
 import { Observable } from 'rxjs';
 import { SmartEraOverlayContainerAdapter } from './@theme/overlay/smartera-overlay-container-adapter';
 class GenericConfig<T> {
@@ -148,81 +147,6 @@ export class CustomTranslateLoader implements TranslateLoader {
         }),
         
       ],forms: {}}),
-      NbAuthModuleCustom.forRoot({
-        strategies: [
-        NbPasswordAuthStrategy.setup({
-        name: 'email',
-        baseEndpoint: '',
-        login: {
-          alwaysFail: false,
-          endpoint: '/login',
-          method: 'post',
-          redirect: {
-            success: '/pages/administration/adminCatalogues',
-            failure: '/pages/auth/login',
-          },
-          defaultErrors: ['Username/password combination is not correct, please try again.'],
-          defaultMessages: ['You have been successfully logged in.'],
-        },
-        logout: {
-          alwaysFail: false,
-          endpoint: '/logout',
-          method: 'post',
-          redirect: {
-            success: '/pages/auth/login',
-            failure: '/pages/auth/login',
-          } 
-          
-        }}),
-        
-      ],
-      forms: {
-        login: {
-          redirectDelay: 500, // delay before redirect after a successful login, while success message is shown to the user
-          strategy: 'email',  // strategy id key.
-          rememberMe: true,   // whether to show or not the `rememberMe` checkbox
-          showMessages: {     // show/not show success/error messages
-            success: true,
-            error: true,
-          },
-          redirect: {
-            success: '/pages/administration/adminCatalogues',  // redirect after a successful login
-            failure: '/pages/auth/login', // redirect after a failed login
-          }
-        },
-        requestPassword: {
-          redirectDelay: 500,
-          strategy: 'email',
-          showMessages: {
-            success: true,
-            error: true,
-          },
-        },
-        logout: {
-          redirectDelay: 500,
-          strategy: 'email',
-          redirect: {
-            success: '/pages/auth/login',
-            failure: '/pages/home',
-          },
-        },
-        validation: {
-          password: {
-            required: true,
-            minLength: 4,
-            maxLength: 50,
-          },
-          email: {
-            required: true,
-          },
-          fullName: {
-            required: false,
-            minLength: 4,
-            maxLength: 50,
-          },
-        },
-      },
-    }),
   ],
   providers: [
     NbSidebarService,
@@ -232,11 +156,6 @@ export class CustomTranslateLoader implements TranslateLoader {
       provide: HTTP_INTERCEPTORS,
       useClass: TokenInterceptor,
       multi: true
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: NbAuthSimpleInterceptor,
-      multi: true,
     },
     {
       provide: NbOverlayContainerAdapter,

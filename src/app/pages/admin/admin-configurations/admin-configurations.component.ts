@@ -154,27 +154,6 @@ export class AdminConfigurationsComponent implements OnInit {
       this.contextBrokerUrl = ''
   }
 
-  oldPassword: string = '';
-  newPassword: string = '';
-  confirmPassword: string = '';
-  handleUpdatePassword() {
-    if (this.newPassword != this.confirmPassword) {
-      alert('New password and confirm password do not match');
-      return;
-    }
-    // retreive username from session
-    let username = localStorage.getItem('username');
-    let json = {
-      "oldPassword": Md5.hashStr(this.oldPassword),
-      "newPassword": this.newPassword,
-      "newPasswordConfirm": this.confirmPassword,
-      "username": username,
-    };
-    this.restApi.updatePassword(json).subscribe((data: any) => {
-      console.log(data);
-    });
-  }
-
   handleSparqlPrefixOpenModal() {
 
     this.dialogService.open(PrefixDialogComponent, {

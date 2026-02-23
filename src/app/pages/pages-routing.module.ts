@@ -3,7 +3,6 @@ import { NgModule } from '@angular/core';
 
 import { PagesComponent } from './pages.component';
 import { NotFoundComponent } from './not-found/not-found.component';
-import { NbAuthComponent, NbLoginComponent, NbLogoutComponent } from '../@theme/components/auth/public_api';
 
 const routes: Routes = [{
   path: '',
@@ -45,19 +44,6 @@ const routes: Routes = [{
       loadComponent: () => import('./statistics/statistics.component')
       .then(m => m.StatisticsComponent),
     },
-        {
-          path: 'auth',
-          component: NbAuthComponent,
-          children: [
-            {
-              path: 'login',
-              component: NbLoginComponent,
-            },
-            {
-              path: 'logout',
-              component: NbLogoutComponent,
-            }
-          ]},
     { 
       path: '',
       redirectTo: 'home',

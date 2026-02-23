@@ -243,10 +243,6 @@ export class CataloguesServiceService {
     return this.http.post<any>(`${this.apiEndpoint}/Idra/api/v1/administration/configuration`, json);  
   }
 
-  updatePassword(json: any): Observable<any> {
-    return this.http.put<any>(`${this.apiEndpoint}/Idra/api/v1/administration/updatePassword`, json);
-  }
-
   listPrefixes(): Observable<Prefixes> {
     return this.http.get<Prefixes>(`${this.apiEndpoint}/Idra/api/v1/administration/prefixes`);
   }

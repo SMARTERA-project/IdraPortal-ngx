@@ -277,7 +277,6 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
     const method = this.getOption(`${module}.method`);
     const url = this.getActionEndpoint(module);
     const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
     
     return observableOf({})
       .pipe(
@@ -291,9 +290,9 @@ export class NbPasswordAuthStrategy extends NbAuthStrategy {
               'Content-Type': 'application/json',
               // 'Authorization': `Bearer ${token}`,
               // 'Access-Control-Allow-Origin': '*',
-              // 'Cookie': 'loggedin='+token+';username='+username
+              // 'Cookie': 'loggedin='+token
             }),
-            body: {username: username, token: token},
+            body: {token: token},
             observe: 'response' as 'response'
           };  
           return this.http.request(method, url, httpOptions);

@@ -11,8 +11,7 @@ import { Router } from '@angular/router';
 import { OidcUserInformationService } from '../../../pages/auth/services/oidc-user-information.service';
 import { ConfigService } from 'ngx-config-json';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { NbAuthJWTToken, NbAuthService } from '../auth/public_api';
-import { RippleService } from '../../../@core/utils/ripple.service';
+import { NbAuthJWTToken, NbAuthService } from '@nebular/auth';
 import { Observable } from 'rxjs';
 import { SharedService } from '../../../pages/services/shared.service';
 
@@ -71,13 +70,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ];
   public currentTheme: string = 'material-smartera';
   public logoPath: string = 'assets/images/Smart_Era_X_Idra.png';
+  authenticated: boolean = false;
 
   constructor(private sidebarService: NbSidebarService,
               private menuService: NbMenuService,
               private themeService: NbThemeService,
               private userService: OidcUserInformationService,
               private layoutService: LayoutService,
-              private rippleService: RippleService,
               private configService: ConfigService<Record<string, any>>,
               @Inject(NB_WINDOW) private window,
               private breakpointService: NbMediaBreakpointsService,
@@ -86,30 +85,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
               private translate: TranslateService,
               private sharedService: SharedService,
               ) {
-                this.typeLogin = this.configService.config["authenticationMethod"];
-       if(this.typeLogin.toLowerCase() === "basic"){         
-                this.materialTheme$ = this.themeService.onThemeChange()
+    this.typeLogin = this.configService.config["authenticationMethod"];
+    this.materialTheme$ = this.themeService.onThemeChange()
       .pipe(map(theme => {
         const themeName: string = theme?.name || '';
         return themeName.startsWith('material');
       }));
 
-      this.authService.onTokenChange()
+    this.authService.onTokenChange()
       .subscribe((token: NbAuthJWTToken) => {
-      
         if (token.isValid()) {
           this.authenticated = true;
         } else {
           this.authenticated = false;
         }
-        
       });
-    }  
-            
   }
-
-
-  authenticated: boolean = false;
   
   ngOnInit() {
     const savedTheme = this.window?.localStorage?.getItem(this.THEME_STORAGE_KEY);
@@ -178,45 +169,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
           this.router.navigate([`${this.configService.config['dashboardBaseURL']}/keycloak-auth/logout`]);
         }
       });
-    }else{
-      this.userMenu = [
-        { title: 'Keycloak Profile', url: `${this.configService['idmBaseURL']}/auth/realms/${this.configService['idmRealmName']}/account`,target:'_blank' }, 
-        { title: 'Log out', data: { tag: "logout" } }
-      ]
-  
-      this.currentTheme = this.themeService.currentTheme;
-      this.authenticationEnabled=this.configService["enableAuthentication"]
-  
-      const { xl } = this.breakpointService.getBreakpointsMap();
-      this.themeService.onMediaQueryChange()
-        .pipe(
-          map(([, currentBreakpoint]) => currentBreakpoint.width < xl),
-          takeUntil(this.destroy$),
-        )
-        .subscribe((isLessThanXl: boolean) => this.userPictureOnly = isLessThanXl);
-  
-      this.themeService.onThemeChange()
-        .pipe(
-          map(({ name }) => name),
-          takeUntil(this.destroy$),
-        )
-        .subscribe(themeName => {
-          this.currentTheme = themeName;
-          this.rippleService.toggle(themeName?.startsWith('material'));
-          try { this.window?.localStorage?.setItem(this.THEME_STORAGE_KEY, themeName); } catch (e) {}
-        });
-  
-      this.menuService.onItemClick()
-        .pipe(
-          filter(({ tag }) => tag === 'user-menu'),
-          map(({ item: { data } }) => data),
-        )
-        .subscribe(res => {
-          if (res["tag"] == "logout") {
-            // window.open(this.userService.getLogoutUrl(), '_self');
-            this.router.navigate(['/auth/logout']);
-          }
-        });
     }
   }
 
@@ -253,13 +205,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  logIn() {
-    this.router.navigate(['/pages/auth/login']);
-  }
-
-  logOut() {
-    this.router.navigate(['/pages/auth/logout']);
-  }
   changeLang(event) {
     this.translate.use(event);
     this.sharedService.propagateDialogSelectedLanguage(event);

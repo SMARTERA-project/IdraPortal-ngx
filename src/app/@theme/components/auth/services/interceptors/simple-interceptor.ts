@@ -24,7 +24,6 @@ export class NbAuthSimpleInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token_ = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
 
     this.menu = MENU_ITEMS;
 
@@ -45,7 +44,7 @@ export class NbAuthSimpleInterceptor implements HttpInterceptor {
               headers: new HttpHeaders({
                 'Access-Control-Allow-Origin': '*',
                 'Authorization': `Bearer ${token_}`,
-                'Cookie': 'loggedin=' + token + ';username=' + username,
+                'Cookie': 'loggedin=' + token,
                 'observe': 'response',
               }),
             });
@@ -63,9 +62,8 @@ export class NbAuthSimpleInterceptor implements HttpInterceptor {
                 if (err instanceof HttpErrorResponse) {
                   if (err.status === 401) {
                     localStorage.removeItem('token');
-                    localStorage.removeItem('username');
                     this.tokenService.clear();
-                    this.router.navigate(['/pages/auth/login']);
+                    this.router.navigate(['/keycloak-auth/']);
                   }
                   return throwError(err);
                 }

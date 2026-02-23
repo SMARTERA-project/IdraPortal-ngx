@@ -75,29 +75,6 @@
       </nb-accordion-item>
       
       <nb-accordion-item>
-        <nb-accordion-item-header>{{ 'ADMIN_UPDATE_PASSWORD_HEADER' | translate }}</nb-accordion-item-header>
-        <nb-accordion-item-body>
-          <div class="row show-grid">
-            <div class="col-md-12">
-              <nb-card class="minicard">
-                <nb-card-body class="d-flex flex-column align-items-left justify-content-left">
-                  <h6 class="jumbotron-heading">{{ 'ADMIN_UPDATE_PASSWORD_OLD' | translate }}</h6>
-                  <input type="text" nbInput fullWidth status="primary" placeholder="{{ 'ADMIN_UPDATE_PASSWORD_OLD_PLACEHOLDER' | translate }}" [(ngModel)]="oldPassword">
-                  <h6 class="jumbotron-heading mt-3">{{ 'ADMIN_UPDATE_PASSWORD_NEW' | translate }}</h6>
-                  <input type="text" nbInput fullWidth status="primary" placeholder="{{ 'ADMIN_UPDATE_PASSWORD_NEW_PLACEHOLDER' | translate }}" [(ngModel)]="newPassword">
-                  <h6 class="jumbotron-heading mt-3">{{ 'ADMIN_UPDATE_PASSWORD_CONFIRM' | translate }}</h6>
-                  <input type="text" nbInput fullWidth status="primary" placeholder="{{ 'ADMIN_UPDATE_PASSWORD_CONFIRM_PLACEHOLDER' | translate }}" [(ngModel)]="confirmPassword">
-                </nb-card-body>
-              </nb-card>
-            </div>
-            <div class="col-md-2">
-              <button nbButton hero status="primary" class="mt-2 btn-full-width" (click)="handleUpdatePassword()">{{ 'APPLY' | translate }}</button>
-            </div>
-          </div>
-        </nb-accordion-item-body>
-      </nb-accordion-item>
-      
-      <nb-accordion-item>
         <nb-accordion-item-header>{{ 'ADMIN_REMOTE_CATALOG_HEADER' | translate }}</nb-accordion-item-header>
         <nb-accordion-item-body>
           <div class="row show-grid">
