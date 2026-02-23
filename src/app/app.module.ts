@@ -24,7 +24,8 @@ import {
   NbButtonModule,
   NbCheckboxModule,
   NbInputModule,
-  NbSidebarService
+  NbSidebarService,
+  NbOverlayContainerAdapter
 } from '@nebular/theme';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { NbSecurityModule } from '@nebular/security';
@@ -39,6 +40,7 @@ import { TokenInterceptor } from './pages/auth/services/token.interceptor';
 import { JwtHelperService, JwtModule } from '@auth0/angular-jwt';
 import { NbAuthModuleCustom, NbAuthSimpleInterceptor, NbPasswordAuthStrategy } from './@theme/components/auth/public_api';
 import { Observable } from 'rxjs';
+import { SmartEraOverlayContainerAdapter } from './@theme/overlay/smartera-overlay-container-adapter';
 class GenericConfig<T> {
   constructor(public config: T) {}
 }
@@ -235,6 +237,10 @@ export class CustomTranslateLoader implements TranslateLoader {
       provide: HTTP_INTERCEPTORS,
       useClass: NbAuthSimpleInterceptor,
       multi: true,
+    },
+    {
+      provide: NbOverlayContainerAdapter,
+      useClass: SmartEraOverlayContainerAdapter,
     },
     JwtHelperService,
   ]

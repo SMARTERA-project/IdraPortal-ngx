@@ -4,6 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CodeEditorComponent, CodeModel } from '@ngstack/code-editor';
 
 @Component({
+  standalone: true,
   imports: [NbCardModule, TranslateModule, CodeEditorComponent, NbButtonModule],
   selector: 'ngx-editor-dialog',
   templateUrl: 'editor-dialog.component.html',

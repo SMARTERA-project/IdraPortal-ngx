@@ -17,7 +17,7 @@ import { FooterComponent, HeaderComponent } from '../../components';
       </nb-sidebar>
 
       <nb-layout-column>
-        <ng-content select="router-outlet"></ng-content>
+        <ng-content></ng-content>
       </nb-layout-column>
 
       <nb-layout-footer fixed>

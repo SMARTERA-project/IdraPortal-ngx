@@ -39,3 +39,46 @@
   @include nb-overrides();
   @include material-overrides();
 };
+
+// Ensure overlay container never participates in page layout flow.
+.cdk-overlay-container {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.cdk-overlay-pane,
+.cdk-overlay-backdrop,
+.cdk-global-overlay-wrapper {
+  pointer-events: auto;
+}
+
+// Prevent Chrome jump/collapse when CDK tries to lock body scroll.
+body.cdk-global-scrollblock {
+  position: static !important;
+  width: auto !important;
+  overflow: hidden !important;
+}
+
+html.cdk-global-scrollblock,
+html.nb-global-scrollblock {
+  position: static !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: auto !important;
+  overflow: hidden !important;
+}
+
+// Chrome overlay stability: transformed ancestors can break fixed overlay rendering.
+nb-layout,
+nb-layout .layout,
+nb-layout .layout-container,
+nb-layout .scrollable-container {
+  transform: none !important;
+  filter: none !important;
+  perspective: none !important;
+}

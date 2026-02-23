@@ -27,6 +27,7 @@ interface FSEntry {
 
 
 @Component({
+	standalone: true,
 	imports: [NbCardModule, TranslateModule, NbTreeGridModule, NbSelectModule, NbInputModule, RouterModule, NbActionsModule, NbButtonModule],
 	selector: 'ngx-remote-catalogues',
 	templateUrl: './remote-catalogues.component.html',

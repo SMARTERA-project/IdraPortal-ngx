@@ -3,11 +3,6 @@ import { NgModule } from '@angular/core';
 
 import { PagesComponent } from './pages.component';
 import { NotFoundComponent } from './not-found/not-found.component';
-import {
-  NbAuthComponent as NebularAuthComponent,
-  NbLoginComponent as NebularLoginComponent,
-  NbLogoutComponent as NebularLogoutComponent
-} from '@nebular/auth';
 import { NbAuthComponent, NbLoginComponent, NbLogoutComponent } from '../@theme/components/auth/public_api';
 
 const routes: Routes = [{
@@ -50,20 +45,6 @@ const routes: Routes = [{
       loadComponent: () => import('./statistics/statistics.component')
       .then(m => m.StatisticsComponent),
     },
-    {
-      path: 'keycloak-auth',
-      component: NebularAuthComponent,
-      children: [
-        {
-          path: 'login',
-          component: NebularLoginComponent,
-        },
-        {
-          path: 'logout',
-          component: NebularLogoutComponent,
-        },
-      ],  
-    }, 
         {
           path: 'auth',
           component: NbAuthComponent,

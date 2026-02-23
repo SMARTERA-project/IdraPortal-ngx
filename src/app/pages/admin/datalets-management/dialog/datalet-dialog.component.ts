@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { NbButtonModule, NbCardModule, NbDialogRef } from '@nebular/theme';
 @Component({
+  standalone: true,
   imports: [NbCardModule, NbButtonModule],
   selector: 'ngx-prefix-dialog',
   templateUrl: 'datalet-dialog.component.html',

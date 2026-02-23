@@ -28,6 +28,7 @@ interface FSEntry {
   
 
 @Component({
+  standalone: true,
   imports: [NbCardModule, NbTreeGridModule, TranslateModule, NbButtonModule, RouterModule, NbIconModule, CommonModule, NbDialogModule ],
   selector: 'ngx-datalets-management',
   templateUrl: './datalets-management.component.html',

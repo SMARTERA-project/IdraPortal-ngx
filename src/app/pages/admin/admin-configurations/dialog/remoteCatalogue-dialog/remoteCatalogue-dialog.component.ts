@@ -5,6 +5,7 @@ import { NbButtonModule, NbCardModule, NbDialogRef, NbInputModule, NbSelectModul
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
+  standalone: true,
   imports: [NbCardModule, TranslateModule, FormsModule, NbSelectModule, CommonModule, NbInputModule, NbButtonModule],
   selector: 'ngx-remoteCatalogue-dialog',
   templateUrl: 'remoteCatalogue-dialog.component.html',

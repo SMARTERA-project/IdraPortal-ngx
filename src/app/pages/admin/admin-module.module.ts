@@ -34,7 +34,6 @@ echarts.use([
   ToolboxComponent,
   CanvasRenderer,
 ]);
-import { ThemeModule } from '../../@theme/theme.module';
 import { AdminConfigurationsComponent } from './admin-configurations/admin-configurations.component';
 import { PrefixDialogComponent } from './admin-configurations/dialog/prefix-dialog/prefix-dialog.component';
 import { RemoteCatalogueDialogComponent } from './admin-configurations/dialog/remoteCatalogue-dialog/remoteCatalogue-dialog.component';
@@ -60,7 +59,6 @@ import { CommonModule } from '@angular/common';
     EditorDialogComponent,
     TranslateModule,
     AdminRoutingModule,
-    NbDialogModule.forChild(),
     NbFormFieldModule,
     NbTagModule,
     NbIconModule,
@@ -82,7 +80,6 @@ import { CommonModule } from '@angular/common';
     NbUserModule,
     NgxEchartsModule.forRoot({ echarts }),
     NbTableModule,
-    ThemeModule,
   ]
 })
 export class AdminModule { }

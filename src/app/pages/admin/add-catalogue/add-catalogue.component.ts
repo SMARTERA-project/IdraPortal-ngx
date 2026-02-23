@@ -59,6 +59,7 @@ export interface Node {
 }
 
 @Component({
+  standalone: true,
   imports: [NbCardModule, TranslateModule, NbSpinnerModule, NbSelectModule, FormsModule, NbButtonModule, NbInputModule, CommonModule, NbIconModule, NbTooltipModule],
   selector: 'ngx-add-catalogue',
   templateUrl: './add-catalogue.component.html',
@@ -621,6 +622,11 @@ export class AddCatalogueComponent implements OnInit {
 		if(this.node.homepage == ''){
 			this.node.homepageInvalid=true;
 		}else{
+			this.node.homepageInvalid=false;
+		}
+		
+		if(this.node.nodeType == 'DCATDUMP'){
+			this.node.hostInvalid=false;
 			this.node.homepageInvalid=false;
 		}
 

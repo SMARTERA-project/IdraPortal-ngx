@@ -41,6 +41,7 @@ interface FSEntry {
 
 
 @Component({
+  standalone: true,
   imports: [NbCardModule, TranslateModule, NbTreeGridModule, NbInputModule, NbToggleModule, NbIconModule, NbTooltipModule, RouterModule, CommonModule],
   selector: 'ngx-catalogues-list',
   templateUrl: './catalogues-list.component.html',
@@ -572,6 +573,33 @@ export class CataloguesListComponent implements OnInit {
 		}, 1000);
 	}
 
+	private hasDeferredFirstDeactivateDialog = false;
+
+	private openDeactivateCatalogueDialog(id: string) {
+		this.dialogService.open(ShowcaseDialogComponent, {
+			context: {
+			  title: 'Deactivate Catalogue?',
+			  body: 'Chose KEEP DATASETS in order to keep dataset in cache'
+			},
+		  }).onClose.subscribe(res => {
+			if(res == 1)
+				this.restApi.deactiveCatalogue(id,true)
+				.finally(() => {
+					setTimeout(() => {
+						this.loadCatalogue();
+					}, 1000);
+				})
+			else if(res == 0)
+				this.restApi.deactiveCatalogue(id,false)
+				.finally(() => {
+					setTimeout(() => {
+						this.loadCatalogue();
+					}, 1000);
+				})
+			return
+		  });
+	}
+
 	syncCatalogue(id : string, index : number){
 		this.disableOnLoading(index);
 		this.restApi.syncRemoteCatalogue(id)
@@ -595,28 +623,12 @@ export class CataloguesListComponent implements OnInit {
 	activeCatalogue(id : string, index : number, active: boolean){
 		if(active){
 			this.disableOnLoading(index);
-			this.dialogService.open(ShowcaseDialogComponent, {
-				context: {
-				  title: 'Deactivate Catalogue Consip OpenData?',
-				  body: 'Chose KEEP DATASETS in order to keep dataset in cache'
-				},
-			  }).onClose.subscribe(res => {
-				if(res == 1)
-					this.restApi.deactiveCatalogue(id,true)
-					.finally(() => {
-						setTimeout(() => {
-							this.loadCatalogue();
-						}, 1000);
-					})
-				else if(res == 0)
-					this.restApi.deactiveCatalogue(id,false)
-					.finally(() => {
-						setTimeout(() => {
-							this.loadCatalogue();
-						}, 1000);
-					})
-				return
-			  });
+			if (!this.hasDeferredFirstDeactivateDialog) {
+				this.hasDeferredFirstDeactivateDialog = true;
+				setTimeout(() => this.openDeactivateCatalogueDialog(id), 0);
+			} else {
+				this.openDeactivateCatalogueDialog(id);
+			}
 			return
 		}
 		this.disableOnLoading(index);

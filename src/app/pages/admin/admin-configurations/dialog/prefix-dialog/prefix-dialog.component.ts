@@ -5,6 +5,7 @@ import { NbButtonModule, NbCardModule, NbDialogRef, NbInputModule } from '@nebul
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
+  standalone: true,
   imports: [NbCardModule, TranslateModule, FormsModule, CommonModule, NbButtonModule, NbInputModule],
   selector: 'ngx-prefix-dialog',
   templateUrl: 'prefix-dialog.component.html',

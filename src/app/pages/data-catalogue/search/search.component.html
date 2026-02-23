@@ -2,7 +2,7 @@
   <div class="col-row">
     <nb-card class="minicard">
       <nb-card-body class="d-flex flex-column align-items-center justify-content-center">
-        <h2 class="jumbotron-heading">{{ 'DATALET_SEARCH_TITLE' | translate }} {{currentDatasets}} {{
+        <h2 class="jumbotron-heading">{{ 'DATALET_SEARCH_TITLE' | translate }} {{totalDatasets}} {{
           'DATALET_DATASETS_FROM' | translate }} {{cataloguesInfos.length}} {{ 'DATALET_CATALOGUES' | translate }}!</h2>
         <nb-tag-list (tagRemove)="onTagRemove($event)">
           @for (filter of filters; track $index) {<nb-tag appearance="outline" status="primary" [text]="filter" removable></nb-tag>}
