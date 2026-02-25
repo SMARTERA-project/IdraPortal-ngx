@@ -54,6 +54,19 @@
     background-color: nb-theme(color-primary-700) !important;
   }
 
+  // make nb-user strings white color
+  ::ng-deep nb-user .user-name {
+    color: nb-theme(header-text-color) !important;
+  }
+
+   ::ng-deep nb-user .user-title {
+    color: nb-theme(header-text-color) !important;
+  }
+
+   ::ng-deep nb-user .user-image {
+    border: 2px solid nb-theme(header-text-color) !important;
+  }
+
   nb-action {
     height: auto;
     display: flex;

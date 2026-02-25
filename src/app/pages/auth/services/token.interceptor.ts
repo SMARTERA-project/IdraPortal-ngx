@@ -57,7 +57,11 @@ export class TokenInterceptor implements HttpInterceptor {
         return this.auth.getToken().pipe(
           switchMap((x: NbAuthOAuth2JWTToken) => {
             
-            const token = x.getPayload()?.access_token;
+            const token =
+              x.getValue?.() ||
+              x.getPayload()?.access_token ||
+              localStorage.getItem('token') ||
+              undefined;
             let newHeaders = req.headers;
             // console.log("entro " + token);
             if (token && !req.url.includes('/IdraPortal-ngx-Translations')) {

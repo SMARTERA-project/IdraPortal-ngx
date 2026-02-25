@@ -56,23 +56,14 @@
     <nb-action
       class="user-action">
       @if (user) {<div>
-      @if (user.roles!==undefined) {<nb-user
-                [nbContextMenu]="userMenu"
-                nbContextMenuTag="user-menu"
-                [onlyPicture]="userPictureOnly"
-                [name]="(user?.name!==undefined)?user?.name:user?.preferred_username"
-                [title]="user?.roles.join(' | ')"
-                [picture]="'assets/images/default_user.png'">
-      </nb-user>}
-
-      @if (user.realm_access!==undefined && user.realm_access.roles !== undefined) {<nb-user
-                [nbContextMenu]="userMenu"
-                nbContextMenuTag="user-menu"
-                [onlyPicture]="userPictureOnly"
-                [name]="(user?.name!==undefined)?user?.name:user?.preferred_username"
-                [title]="user?.realm_access.roles.join(' | ')"
-                [picture]="'assets/images/default_user.png'">
-      </nb-user>}
+        <nb-user
+          [nbContextMenu]="userMenu"
+          nbContextMenuTag="user-menu"
+          [onlyPicture]="userPictureOnly"
+          [name]="(user?.name!==undefined)?user?.name:user?.preferred_username"
+          [title]="user?.email"
+          [picture]="'assets/images/default_user.png'">
+        </nb-user>
     </div>}
     </nb-action>
   </nb-actions>}

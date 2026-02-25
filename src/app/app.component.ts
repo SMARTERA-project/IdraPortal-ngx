@@ -34,21 +34,36 @@ export class AppComponent {
     // Remove legacy BASIC auth local storage artifacts.
     localStorage.removeItem('username');
 
+    const keycloakBaseUrl =
+      this.config.config['keyCloakBaseURL'] ||
+      this.config.config['idmBaseURL'] ||
+      environment.idmBaseURL;
+    const keycloakRealm =
+      this.config.config['keyCloakRealmName'] ||
+      this.config.config['idmRealmName'] ||
+      environment.idmRealmName;
+    const dashboardBaseUrl =
+      this.config.config['dashboardBaseURL'] || window.location.origin;
+    const keycloakClientId =
+      this.config.config['client_id'] || environment.client_id;
+    const keycloakClientSecret =
+      this.config.config['client_secret'] ?? environment.client_secret;
+
     oauthStrategy.setOptions({
-      name: environment.authProfile,
-      clientId: environment.client_id,
-      clientSecret: environment.client_secret,
-      baseEndpoint: `${this.config.config["keyCloakBaseURL"]}/auth/realms/${environment.idmRealmName}/protocol/openid-connect`,
+      name: this.config.config['authProfile'] || environment.authProfile,
+      clientId: keycloakClientId,
+      clientSecret: keycloakClientSecret,
+      baseEndpoint: `${keycloakBaseUrl}/auth/realms/${keycloakRealm}/protocol/openid-connect`,
       clientAuthMethod: NbOAuth2ClientAuthMethod.NONE,
       token: {
         endpoint: '/token',
-        redirectUri: `${this.config.config["dashboardBaseURL"]}/keycloak-auth/callback`,
+        redirectUri: `${dashboardBaseUrl}/keycloak-auth/callback`,
         class: OidcJWTToken,
       },
       authorize: {
         endpoint: '/auth',
         scope: 'openid',
-        redirectUri: `${this.config.config["dashboardBaseURL"]}/keycloak-auth/callback`,
+        redirectUri: `${dashboardBaseUrl}/keycloak-auth/callback`,
         responseType: NbOAuth2ResponseType.CODE
       },
       redirect: {

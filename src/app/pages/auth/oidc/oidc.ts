@@ -31,9 +31,16 @@ export class OidcJWTToken extends NbAuthOAuth2JWTToken {
     // let's rename it to exclude name clashes
     static NAME = 'nb:auth:oidc:token';
 
-    declare protected readonly token: OidcToken;
+    declare protected readonly token: OidcToken | string | undefined;
 
     getValue(): string {
-        return this.token.access_token;
+        const rawToken = this.token as any;
+        if (typeof rawToken === 'string') {
+            return rawToken;
+        }
+        if (rawToken && typeof rawToken === 'object' && rawToken.access_token) {
+            return rawToken.access_token;
+        }
+        return super.getValue();
     }
 }
