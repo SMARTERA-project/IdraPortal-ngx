@@ -41,7 +41,6 @@ import { NbAuthComponent } from './components/auth.component';
 
 import { NbAuthBlockComponent } from './components/auth-block/auth-block.component';
 import { NbLoginComponent } from './components/login/login.component';
-import { NbRegisterComponent } from './components/register/register.component';
 import { NbLogoutComponent } from './components/logout/logout.component';
 import { NbRequestPasswordComponent } from './components/request-password/request-password.component';
 import { NbResetPasswordComponent } from './components/reset-password/reset-password.component';
@@ -92,14 +91,12 @@ export function nbNoOpInterceptorFilter(req: HttpRequest<any>): boolean {
     NbAuthComponent,
     NbAuthBlockComponent,
     NbLoginComponent,
-    NbRegisterComponent,
     NbRequestPasswordComponent,
     NbResetPasswordComponent,
     NbLogoutComponent,
     NbAuthComponent,
     NbAuthBlockComponent,
     NbLoginComponent,
-    NbRegisterComponent,
     NbRequestPasswordComponent,
     NbResetPasswordComponent,
     NbLogoutComponent,

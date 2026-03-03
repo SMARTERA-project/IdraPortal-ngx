@@ -1,5 +1,6 @@
 FROM node:24.11.0-alpine as builder
-ARG BASE_HREF
+ARG BUILD_CONFIGURATION=production
+ARG BASE_HREF=/
 RUN mkdir -p /app
 WORKDIR /app
 COPY package.json /app
@@ -7,7 +8,7 @@ COPY package-lock.json /app
  
 RUN npm install
 COPY . /app
-RUN npm run build -- --configuration production --base-href /IdraPortal/
+RUN npm run build -- --configuration ${BUILD_CONFIGURATION} --base-href ${BASE_HREF}
 
 FROM nginx
 EXPOSE 80

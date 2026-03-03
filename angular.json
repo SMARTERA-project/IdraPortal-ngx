@@ -72,6 +72,28 @@
                 }
               ]
             },
+            "docker": {
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ],
+              "optimization": false,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.docker.ts"
+                }
+              ]
+            },
             "development": {
               "optimization": {
                 "scripts": true,
@@ -90,6 +112,9 @@
           "configurations": {
             "production": {
               "buildTarget": "ngx-admin-demo:build:production"
+            },
+            "docker": {
+              "buildTarget": "ngx-admin-demo:build:docker"
             },
             "development": {
               "buildTarget": "ngx-admin-demo:build:development"
