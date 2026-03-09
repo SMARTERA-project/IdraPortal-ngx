@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NbCardModule, NbSpinnerModule, NbTagComponent, NbTagInputAddEvent, NbTagModule, NbListModule, NbIconModule, NbCheckboxModule, NbTooltipModule } from '@nebular/theme';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { NbEvaIconsModule } from '@nebular/eva-icons';
@@ -10,10 +10,11 @@ import { SearchRequest } from '../model/search-request';
 import { SearchResult } from '../model/search-result';
 import { DataCataglogueAPIService } from '../services/data-cataglogue-api.service';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { MetadataLocalizationService } from '../services/metadata-localization.service';
 
 @Component({
   standalone: true,
@@ -37,7 +38,7 @@ import { RouterModule } from '@angular/router';
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss']
 })
-export class SearchComponent implements OnInit {
+export class SearchComponent implements OnInit, OnDestroy {
 
 
   searchResponse: SearchResult = new SearchResult();
@@ -48,6 +49,7 @@ export class SearchComponent implements OnInit {
   constructor(private restApi: DataCataglogueAPIService,
     public router: Router,
     public translation: TranslateService,
+    private metadataLocalizationService: MetadataLocalizationService,
   ) { }
 
   loading = false;
@@ -61,8 +63,11 @@ export class SearchComponent implements OnInit {
   filters: Array<string> = [];
   filtersTags: Array<string>= [];
   isHVD_Dataset: boolean | null = null; // null = show all
+  private languageSubscription?: Subscription;
+  private selectedLanguage = 'en';
 
   ngOnDestroy() {
+    this.languageSubscription?.unsubscribe();
   }
 
   ngOnInit(): void { 
@@ -72,6 +77,11 @@ export class SearchComponent implements OnInit {
     this.searchResponse.facets = this.searchResponse.facets || [];
     (this.searchResponse as any).results = (this.searchResponse as any).results || [];
     (this.searchResponse as any).count = (this.searchResponse as any).count || 0;
+    this.selectedLanguage = (this.translation.currentLang || 'en').toLowerCase();
+    this.languageSubscription = this.translation.onLangChange.subscribe((event) => {
+      this.selectedLanguage = (event?.lang || 'en').toLowerCase();
+      (this.searchResponse?.results || []).forEach((dataset: DCATDataset) => this.processDataset(dataset));
+    });
     this.loading=true
     this.restApi.getCataloguesInfo().subscribe({
       next: (infos) =>{
@@ -251,9 +261,11 @@ export class SearchComponent implements OnInit {
 
 
   processDataset(dataset: DCATDataset): DCATDataset {
+    this.metadataLocalizationService.applyDatasetLocalization(dataset, this.selectedLanguage);
+
     let tmp = [];
     dataset.distributionFormats = [];
-    for (let d of dataset.distributions) {
+    for (let d of (dataset.distributions || [])) {
       if (tmp.indexOf(d.format) < 0) {
         let fC = new FormatCount();
         fC.format = d.format;
@@ -265,10 +277,11 @@ export class SearchComponent implements OnInit {
       }
     }
 
-    dataset.description = dataset.description.replace(/\*/g, '').replace(/\\n/g, '')
+    const descriptionValue = (dataset.description || '').toString();
+    dataset.description = descriptionValue.replace(/\*/g, '').replace(/\\n/g, '')
       .replace(/\(http.*\)/g, '').replace(/##\s*/g, '')
       .replace(/<.*>(.*)<\/.*>/g, '$1')
-      .replace(/>/g, '').replace(/\[|\]/g, '')
+      .replace(/>/g, '').replace(/\[|\]/g, '');
 
     return dataset;
   }

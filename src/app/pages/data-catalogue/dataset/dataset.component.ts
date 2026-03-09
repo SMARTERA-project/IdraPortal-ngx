@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NbActionsModule, NbCardModule, NbDialogService, NbListModule, NbSpinnerModule, NbTagModule, NbToastrService, NbTooltipModule } from '@nebular/theme';
 import { ConfigService } from 'ngx-config-json';
@@ -12,10 +12,12 @@ import { ShowDataletsComponent } from '../show-datalets/show-datalets.component'
 import * as URLParse from 'url-parse';
 import { PreviewDialogComponent } from './preview-dialog/preview-dialog.component';
 import { GeoJsonDialogComponent } from './geojson-dialog/geojson-dialog.component';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { MarkdownModule } from 'ngx-markdown';
+import { Subscription } from 'rxjs';
+import { MetadataLocalizationService } from '../services/metadata-localization.service';
 
 @Component({
   standalone: true,
@@ -37,7 +39,7 @@ import { MarkdownModule } from 'ngx-markdown';
   templateUrl: './dataset.component.html',
   styleUrls: ['./dataset.component.scss']
 })
-export class DatasetComponent implements OnInit {
+export class DatasetComponent implements OnInit, OnDestroy {
 
   id:string;
   dataset:DCATDataset=new DCATDataset();
@@ -52,6 +54,8 @@ export class DatasetComponent implements OnInit {
   enableDatalet=true;
 
   samedomain=false;
+  private languageSubscription?: Subscription;
+  private selectedLanguage = 'en';
 
   constructor(
     private router: Router,
@@ -60,11 +64,17 @@ export class DatasetComponent implements OnInit {
     private toastrService: NbToastrService,
     private dialogService: NbDialogService,
     private configService: ConfigService<Record<string, any>>,
+    private translateService: TranslateService,
+    private metadataLocalizationService: MetadataLocalizationService,
     ) { 
       this.dataletBaseUrl = this.configService.config["datalet_base_url"];
       this.enableDatalet = this.configService.config["enable_datalet"];
     }
 
+
+  ngOnDestroy(): void {
+    this.languageSubscription?.unsubscribe();
+  }
 
 
   ngOnInit(): void {
@@ -72,6 +82,11 @@ export class DatasetComponent implements OnInit {
     if(location.origin==dataletOrigin.origin){
       this.samedomain=true;
     }
+    this.selectedLanguage = (this.translateService.currentLang || 'en').toLowerCase();
+    this.languageSubscription = this.translateService.onLangChange.subscribe((event) => {
+      this.selectedLanguage = (event?.lang || 'en').toLowerCase();
+      this.applyLocalizedMetadata();
+    });
 
     this.route.paramMap.subscribe(params => {
       this.id = params.get('id'); 
@@ -89,8 +104,10 @@ export class DatasetComponent implements OnInit {
     this.restApi.getDatasetById(this.id).subscribe({
       next: (res)=>{ 
         this.dataset=res;
-        let tmpLic=[]
-        this.dataset.distributions.forEach( x => {
+        this.applyLocalizedMetadata();
+        this.licenses = [];
+        let tmpLic = [];
+        (this.dataset.distributions || []).forEach( x => {
           if(x.license!=undefined && x.license.name!='' && tmpLic.indexOf(x.license.name)<0){
            tmpLic.push(x.license.name);
            this.licenses.push({"name":x.license.name, "uri":x.license.uri});
@@ -106,12 +123,53 @@ export class DatasetComponent implements OnInit {
     });
   }
 
+  private applyLocalizedMetadata(): void {
+    this.metadataLocalizationService.applyDatasetLocalization(this.dataset, this.selectedLanguage);
+  }
+
   openDistributionDetails(distribution:DCATDistribution){
+    distribution.title = this.getLocalizedDistributionTitle(distribution);
     this.dialogService.open(DistributionComponent, {
       context: {
         distribution: distribution
       },
     });
+  }
+
+  getLocalizedDistributionTitle(distribution: DCATDistribution): string {
+    if (!distribution) {
+      return '';
+    }
+    this.metadataLocalizationService.applyDistributionLocalization(distribution, this.selectedLanguage);
+    const hasTaggedDetails = Array.isArray(distribution.distributionDetails)
+      && distribution.distributionDetails.some((detail) => !!detail?.language && detail.language.trim().length > 0);
+
+    if (!hasTaggedDetails) {
+      const translatedDownload = this.translateService.instant('DOWNLOAD');
+      const normalizedFormat = (distribution.format || '').trim();
+      if (normalizedFormat) {
+        return `${translatedDownload} ${normalizedFormat}`;
+      }
+      return translatedDownload || distribution.title || '';
+    }
+
+    const localizedTitle = (distribution.title || '').trim();
+    const normalizedFormat = (distribution.format || '').trim();
+    if (!localizedTitle) {
+      if (normalizedFormat) {
+        const translatedDownload = this.translateService.instant('DOWNLOAD');
+        return `${translatedDownload} ${normalizedFormat}`;
+      }
+      return '';
+    }
+
+    if (!normalizedFormat) {
+      return localizedTitle;
+    }
+
+    return localizedTitle.toLowerCase().includes(normalizedFormat.toLowerCase())
+      ? localizedTitle
+      : `${localizedTitle} ${normalizedFormat}`;
   }
 
   downloadUrl(distribution:DCATDistribution){
@@ -244,10 +302,11 @@ export class DatasetComponent implements OnInit {
 	handlePreviewFileOpenModal(distribution: DCATDistribution) {
     // check if the distribution format is one of the following: CSV,JSON,XML,GEOJSON,RDF,KML,PDF
     let formatLower = distribution.format.replace(/\s/g, "").toLowerCase();
+    const localizedDistributionTitle = this.getLocalizedDistributionTitle(distribution);
     if(formatLower == "geojson" || formatLower == "kml"  || formatLower == "shp"){
       this.dialogService.open(GeoJsonDialogComponent, {
         context: {
-          title: distribution.title,
+          title: localizedDistributionTitle,
           distribution: distribution,
           type: formatLower,
         },
@@ -262,7 +321,7 @@ export class DatasetComponent implements OnInit {
               console.log(res);
               this.dialogService.open(PreviewDialogComponent, {
                 context: {
-                  title: distribution.title,
+                  title: localizedDistributionTitle,
                   text: res,
                 },
               })
@@ -274,7 +333,7 @@ export class DatasetComponent implements OnInit {
         } else {
           this.dialogService.open(PreviewDialogComponent, {
             context: {
-              title: distribution.title,
+              title: localizedDistributionTitle,
               url: distribution.accessURL,
             },
           })

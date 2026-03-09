@@ -54,9 +54,12 @@ export class PagesComponent implements OnInit {
       }
     })
 */
-this.translateService.onLangChange.subscribe(event => this.translateMenuItems());
+this.translateService.onLangChange.subscribe(event => {
+  this.translateMenuItems();
+  this.sharedService.propagateDialogSelectedLanguage(event?.lang || 'en');
+});
 this.translateMenuItems();
-this.translateService.use('en');
+this.sharedService.propagateDialogSelectedLanguage(this.translateService.currentLang || 'en');
     if (this.configService.config['enableAuthentication']) {
      
     
@@ -72,8 +75,6 @@ this.translateService.use('en');
   }
 
   authMenuItem(menuItem: MenuItem) {
-    this.translateService.use('en');
-    this.sharedService.propagateDialogSelectedLanguage("en");
     if (menuItem.data && menuItem.data['name'] ) {
       this.accessChecker.isGranted('view', menuItem.data['name']).subscribe(res =>
        

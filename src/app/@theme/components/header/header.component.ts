@@ -37,6 +37,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   private destroy$: Subject<void> = new Subject<void>();
   private readonly THEME_STORAGE_KEY = 'idraTheme';
+  private readonly LANGUAGE_STORAGE_KEY = 'idraUserLanguage';
   userPictureOnly: boolean = false;
   user: UserClaims;
   userMenuDefault: NbMenuItem[] = [];
@@ -119,6 +120,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
       //this.languages.push({lan:x,flag: `flag-icon flag-icon-${f} flag-icon-squared` })
       this.languages.push({ lan: x, flag: f, picture: `assets/flags/${f}.svg` })
     })
+
+    const availableLanguages = this.languages
+      .map((lang) => (lang?.lan || '').toString().toLowerCase())
+      .filter((lang) => lang.length > 0);
+    const storedLanguage = (this.window?.localStorage?.getItem(this.LANGUAGE_STORAGE_KEY) || '')
+      .toString()
+      .toLowerCase();
+    const fallbackLanguage = availableLanguages.includes('en')
+      ? 'en'
+      : (availableLanguages[0] || 'en');
+    this.idraUserLanguage = availableLanguages.includes(storedLanguage)
+      ? storedLanguage
+      : fallbackLanguage;
+
     this.translate.use(this.idraUserLanguage);
     this.sharedService.propagateDialogSelectedLanguage(this.idraUserLanguage);
 
@@ -206,7 +221,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   changeLang(event) {
-    this.translate.use(event);
-    this.sharedService.propagateDialogSelectedLanguage(event);
+    this.idraUserLanguage = (event || 'en').toString().toLowerCase();
+    try { this.window?.localStorage?.setItem(this.LANGUAGE_STORAGE_KEY, this.idraUserLanguage); } catch (e) {}
+    this.translate.use(this.idraUserLanguage);
+    this.sharedService.propagateDialogSelectedLanguage(this.idraUserLanguage);
   }
 }

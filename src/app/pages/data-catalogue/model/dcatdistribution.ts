@@ -3,6 +3,7 @@ import { DCTStandard } from "./dctstandard";
 import { SKOSConcept } from "./skosconcept";
 import { SPDXChecksum } from "./spdxchecksum";
 import { DcatDataService } from "./dcatdataservice";
+import { DcatDetails } from "./dcatdetails";
 
 export class DCATDistribution {
   id: string;
@@ -10,6 +11,7 @@ export class DCATDistribution {
   nodeID: string;
   accessURL: string;
   description?: string;
+  distributionDetails?: DcatDetails[];
   format?: string;
   license?: DCTLicenseDocument;
   byteSize?: string;

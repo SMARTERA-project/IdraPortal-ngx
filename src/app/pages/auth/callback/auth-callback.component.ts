@@ -15,6 +15,7 @@ import { HttpClient } from '@angular/common/http';
 export class AuthCallbackComponent implements OnDestroy {
 
   private destroy$ = new Subject<void>();
+  private static readonly LANGUAGE_STORAGE_KEY = 'idraUserLanguage';
 
   constructor(
     private authService: NbAuthService,
@@ -45,7 +46,9 @@ export class AuthCallbackComponent implements OnDestroy {
                 });
             }
             this.router.navigateByUrl('/pages');
-            this.translateService.use('en');
+            const storedLanguage = (localStorage.getItem(AuthCallbackComponent.LANGUAGE_STORAGE_KEY) || 'en')
+              .toLowerCase();
+            this.translateService.use(storedLanguage || 'en');
           } else {
             this.router.navigateByUrl('');
           }

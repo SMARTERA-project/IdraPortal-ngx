@@ -16,15 +16,32 @@ import { TranslateService } from '@ngx-translate/core';
   template: '<router-outlet></router-outlet>',
 })
 export class AppComponent {
+  private static readonly LANGUAGE_STORAGE_KEY = 'idraUserLanguage';
 
   constructor(
     oauthStrategy: NbOAuth2AuthStrategy,
     private config:ConfigService<Record<string, any>>,
     private translate: TranslateService,
     ) {
-    this.translate.addLangs(['en']);
+    const configuredLanguages = ((this.config.config['languages'] || []) as string[])
+      .map((lang: string) => (lang || '').toString().trim().toLowerCase())
+      .filter((lang: string) => lang.length > 0);
+    const uniqueConfiguredLanguages = Array.from(new Set(configuredLanguages));
+    const availableLanguages = uniqueConfiguredLanguages.length > 0
+      ? uniqueConfiguredLanguages
+      : ['en'];
+    const fallbackLanguage = availableLanguages.includes('en') ? 'en' : availableLanguages[0];
+
+    const storedLanguage = (localStorage.getItem(AppComponent.LANGUAGE_STORAGE_KEY) || '')
+      .trim()
+      .toLowerCase();
+    const initialLanguage = availableLanguages.includes(storedLanguage)
+      ? storedLanguage
+      : fallbackLanguage;
+
+    this.translate.addLangs(availableLanguages);
     this.translate.setFallbackLang('en');
-    this.translate.use('en');
+    this.translate.use(initialLanguage);
 
     if (this.config.config['authenticationMethod']?.toLowerCase() !== 'keycloak') {
       throw new Error('Only keycloak authentication is supported.');

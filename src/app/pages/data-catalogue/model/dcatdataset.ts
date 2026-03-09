@@ -7,6 +7,7 @@ import { FOAFAgent } from "./foafagent";
 import { Relationship } from "./relationship";
 import { SKOSConcept } from "./skosconcept";
 import { VCardOrganization } from "./vcard-organization";
+import { DcatDetails } from "./dcatdetails";
 
 export class FormatCount{
   format:string;
@@ -19,6 +20,7 @@ export class DCATDataset {
   nodeID: string;
   title: string;
   description: string;
+  datasetDetails?: DcatDetails[];
   distributions?: DCATDistribution[];
   theme?: SKOSConcept[];
   publisher?: FOAFAgent;
