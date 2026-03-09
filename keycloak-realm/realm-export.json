@@ -45,7 +45,7 @@
     "realm": [
       {
         "id": "36c2f2e6-cbb5-4481-9b63-6f7576665f7a",
-        "name": "CITIZEN",
+        "name": "IDRA_USER",
         "composite": false,
         "clientRole": false,
         "containerId": "urbanite",
@@ -62,7 +62,7 @@
       },
       {
         "id": "7cbe73a4-85ac-416f-a502-4543150dfbe1",
-        "name": "MANAGER",
+        "name": "IDRA_EDITOR",
         "composite": false,
         "clientRole": false,
         "containerId": "urbanite",
@@ -70,7 +70,7 @@
       },
       {
         "id": "ea427147-f789-41e4-ada1-07abf3b64c11",
-        "name": "ADMIN",
+        "name": "IDRA_ADMIN",
         "composite": false,
         "clientRole": false,
         "containerId": "urbanite",
@@ -305,15 +305,15 @@
       "idra": [
         {
           "id": "6d7115f5-f360-4e1c-a073-eee076ef68c4",
-          "name": "ADMIN",
+          "name": "IDRA_ADMIN",
           "composite": true,
           "composites": {
             "realm": [
-              "ADMIN"
+              "IDRA_ADMIN"
             ],
             "client": {
               "idra": [
-                "ADMIN"
+                "IDRA_ADMIN"
               ]
             }
           },

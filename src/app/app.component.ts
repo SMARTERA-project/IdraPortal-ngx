@@ -5,7 +5,6 @@
  */
 import { Component } from '@angular/core';
 import { ConfigService } from 'ngx-config-json';
-import { environment } from '../environments/environment';
 import { NbOAuth2AuthStrategy, NbOAuth2ClientAuthMethod, NbOAuth2GrantType, NbOAuth2ResponseType } from '@nebular/auth';
 import { OidcJWTToken } from './pages/auth/oidc/oidc';
 import { RouterOutlet } from '@angular/router';
@@ -37,20 +36,21 @@ export class AppComponent {
     const keycloakBaseUrl =
       this.config.config['keyCloakBaseURL'] ||
       this.config.config['idmBaseURL'] ||
-      environment.idmBaseURL;
+      'http://localhost';
     const keycloakRealm =
       this.config.config['keyCloakRealmName'] ||
       this.config.config['idmRealmName'] ||
-      environment.idmRealmName;
+      'smartera';
     const dashboardBaseUrl =
       this.config.config['dashboardBaseURL'] || window.location.origin;
     const keycloakClientId =
-      this.config.config['client_id'] || environment.client_id;
+      this.config.config['client_id'] || 'data-platform';
     const keycloakClientSecret =
-      this.config.config['client_secret'] ?? environment.client_secret;
+      this.config.config['client_secret'] ?? '';
+    const authProfile = this.config.config['authProfile'] || 'oidc';
 
     oauthStrategy.setOptions({
-      name: this.config.config['authProfile'] || environment.authProfile,
+      name: authProfile,
       clientId: keycloakClientId,
       clientSecret: keycloakClientSecret,
       baseEndpoint: `${keycloakBaseUrl}/auth/realms/${keycloakRealm}/protocol/openid-connect`,

@@ -145,6 +145,7 @@ export class AddCatalogueComponent implements OnInit {
 		{ code: "EE", code3: "EST", name: "Estonia", number: "233" },
 		{ code: "SZ", code3: "SWZ", name: "Eswatini", number: "748" },
 		{ code: "ET", code3: "ETH", name: "Ethiopia", number: "231" },
+		{ code: "EU", code3: "EUR", name: "Europe", number: "000" },
 		{ code: "FK", code3: "FLK", name: "Falkland Islands (the) [Malvinas]", number: "238" },
 		{ code: "FO", code3: "FRO", name: "Faroe Islands (the)", number: "234" },
 		{ code: "FJ", code3: "FJI", name: "Fiji", number: "242" },
@@ -659,6 +660,8 @@ export class AddCatalogueComponent implements OnInit {
 			}
 		}
 
+		const trimmedDumpUrl = (this.node.dumpURL ?? '').trim();
+
 		//if(validateUrl(node.host)){
 		switch(this.node.nodeType){
 			case 'CKAN':
@@ -675,7 +678,7 @@ export class AddCatalogueComponent implements OnInit {
 				this.node.federationLevel='LEVEL_2';
 				break;
 			case 'DCATDUMP':
-				this.node.federationLevel = this.node.dumpURL.trim() !== '' ? 'LEVEL_2' : 'LEVEL_4';
+				this.node.federationLevel = trimmedDumpUrl !== '' ? 'LEVEL_2' : 'LEVEL_4';
 				break;
 			case 'ORION':
 			case 'SPARQL':
@@ -732,16 +735,19 @@ export class AddCatalogueComponent implements OnInit {
 
 		var fd = new FormData();   
 		if (this.node.nodeType === 'DCATDUMP') {
-			if (this.node.dumpURL.trim() === '' && this.node.dumpString.trim() === '') {
+			const trimmedDumpUrlForValidation = (this.node.dumpURL ?? '').trim();
+			const trimmedDumpString = (this.node.dumpString ?? '').trim();
+
+			if (trimmedDumpUrlForValidation === '' && trimmedDumpString === '') {
 			  this.toastrService.danger("Please upload the dump file or a dump url!", "Error");
 			  this.loading = false;
 			  return;
 			} else {
-			  if (this.node.dumpURL.trim() !== '' && !this.validateUrl(this.node.dumpURL)) {
+			  if (trimmedDumpUrlForValidation !== '' && !this.validateUrl(trimmedDumpUrlForValidation)) {
 				this.toastrService.danger('Invalid dump URL', 'Error');
 				this.loading = false;
 				return;
-			  } else if (this.node.dumpURL.trim() === '' && this.node.dumpString.trim() !== '') {
+			  } else if (trimmedDumpUrlForValidation === '' && trimmedDumpString !== '') {
 				this.node.dumpURL = null;
 			  }
 

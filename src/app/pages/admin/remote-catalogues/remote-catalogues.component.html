@@ -61,7 +61,9 @@
           <ng-container [nbTreeGridColumnDef]="iconColumn">
             <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef class="col-w-120">{{ 'ACTIONS' | translate }}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row">
-              <nb-action [disabled]="row.data.alreadyLoaded" icon="plus-circle-outline" nbTooltip="Add Catalogue" nbTooltipPlacement="right" [options]="{ animation: { type: 'zoom' } }" (click)="row.data.alreadyLoaded ? $event.stopPropagation() : addRemoteCatalogue(row.data.index)"></nb-action>
+              @if (canManageAdministration) {
+                <nb-action [disabled]="row.data.alreadyLoaded" icon="plus-circle-outline" nbTooltip="Add Catalogue" nbTooltipPlacement="right" [options]="{ animation: { type: 'zoom' } }" (click)="row.data.alreadyLoaded ? $event.stopPropagation() : addRemoteCatalogue(row.data.index)"></nb-action>
+              }
             </td>
           </ng-container>
         </table>

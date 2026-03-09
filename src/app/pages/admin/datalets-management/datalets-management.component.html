@@ -55,7 +55,9 @@
             <th nbTreeGridHeaderCell [nbSortHeader]="getSortDirection(iconColumn)" *nbTreeGridHeaderCellDef class="col-w-120">{{ 'ACTIONS' | translate }}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row">
               <nb-icon icon="eye-outline" [options]="{ animation: { type: 'zoom' } }" (click)="handleIFrameDataletOpenModal(row.data.datalet_html)"></nb-icon>
-              <nb-icon icon="close-outline" [options]="{ animation: { type: 'zoom' } }" (click)="deleteDatalet(row.data.id, row.data.nodeID, row.data.datasetID, row.data.distributionID)"></nb-icon>
+              @if (canManageAdministration) {
+                <nb-icon icon="close-outline" [options]="{ animation: { type: 'zoom' } }" (click)="deleteDatalet(row.data.id, row.data.nodeID, row.data.datasetID, row.data.distributionID)"></nb-icon>
+              }
             </td>
           </ng-container>
         </table>

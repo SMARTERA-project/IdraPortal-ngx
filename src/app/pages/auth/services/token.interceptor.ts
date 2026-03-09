@@ -17,6 +17,14 @@ export class TokenInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     console.log('Intercepting request:', req.url);
 
+    const skipAuthEndpoints = [
+      '/oauth2/token',
+      '/openid-connect/token',
+      '/api/menu-blocks',
+      '/public/dashboards',
+      '/Idra/api/v1/client/downloadFromUri',
+    ];
+
     if (req.url.indexOf('/assets/') > -1) {
       console.log('Request to assets, skipping interceptor.');
       return next.handle(req);
@@ -30,10 +38,7 @@ export class TokenInterceptor implements HttpInterceptor {
     //   return next.handle(clonedReq);
     // }
 
-    if (req.url.indexOf('/oauth2/token') > -1 
-      || req.url.indexOf('/openid-connect/token') > -1 
-      || req.url.indexOf('/api/menu-blocks') > -1
-      || req.url.indexOf('/public/dashboards') > -1) {
+    if (skipAuthEndpoints.some((endpoint) => req.url.includes(endpoint))) {
       console.log('Request to token or public endpoints, skipping interceptor.');
       return next.handle(req);
     }

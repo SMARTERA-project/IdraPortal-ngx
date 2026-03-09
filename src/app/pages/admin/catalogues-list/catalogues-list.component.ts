@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NbDialogService, NbIconModule, NbInputModule, NbSortDirection, NbSortRequest, NbToggleModule, NbTooltipModule, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule } from '@nebular/theme';
 import { CataloguesServiceService } from '../../services/catalogues-service.service';
 import { ODMSCatalogue } from '../../data-catalogue/model/odmscatalogue';
@@ -13,6 +13,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { ConfigService } from 'ngx-config-json';
 import { NbCardModule } from '@nebular/theme';
 import { TranslateModule } from '@ngx-translate/core';
+import { OidcUserInformationService } from '../../auth/services/oidc-user-information.service';
 
 
 interface TreeNode<T> {
@@ -49,11 +50,12 @@ interface FSEntry {
 })
 
 
-export class CataloguesListComponent implements OnInit {
+export class CataloguesListComponent implements OnInit, OnDestroy {
 	cataloguesInfos: Array<ODMSCatalogueComplete>=[]
 	loading=false;
 	id=0;
 	totalCatalogues;
+	private refreshIntervalId: ReturnType<typeof setInterval> | null = null;
 
 	cataloguesMoreInfos: ODMSCatalogue
 	data: TreeNode<FSEntry>[] = [];
@@ -133,6 +135,7 @@ export class CataloguesListComponent implements OnInit {
 		{ code: "EE", code3: "EST", name: "Estonia", number: "233" },
 		{ code: "SZ", code3: "SWZ", name: "Eswatini", number: "748" },
 		{ code: "ET", code3: "ETH", name: "Ethiopia", number: "231" },
+		{ code: "EU", code3: "EUR", name: "Europe", number: "000" },
 		{ code: "FK", code3: "FLK", name: "Falkland Islands (the) [Malvinas]", number: "238" },
 		{ code: "FO", code3: "FRO", name: "Faroe Islands (the)", number: "234" },
 		{ code: "FJ", code3: "FJI", name: "Fiji", number: "242" },
@@ -314,13 +317,14 @@ export class CataloguesListComponent implements OnInit {
 	];
 
 
-    constructor(private dataSourceBuilder: NbTreeGridDataSourceBuilder<FSEntry>, 
+	  constructor(private dataSourceBuilder: NbTreeGridDataSourceBuilder<FSEntry>, 
 		private restApi:CataloguesServiceService,
 		private dialogService: NbDialogService,
 		private router: Router,
 		public translation: TranslateService,
 		private sharedService: SharedService,
-		private config:ConfigService<Record<string, any>>
+		private config:ConfigService<Record<string, any>>,
+		private oidcUserInformationService: OidcUserInformationService
 	  ) {
 		// Ensure CB_enabled is a real boolean (config value may be a string URL)
 		this.CB_enabled = !!this.config.config["idra.orion.manager.url"];
@@ -334,13 +338,36 @@ export class CataloguesListComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
+		this.oidcUserInformationService.getRole().subscribe(roles => {
+			this.canManageAdministration = roles.includes('IDRA_ADMIN') || roles.includes('IDRA_EDITOR');
+		});
 		this.loadCatalogue();
-		setInterval(() => {
+		this.startAutoRefresh();
+	}
+
+	ngOnDestroy(): void {
+		this.stopAutoRefresh();
+	}
+
+	private startAutoRefresh(): void {
+		if (this.refreshIntervalId !== null) {
+			return;
+		}
+
+		this.refreshIntervalId = setInterval(() => {
 			this.loadCatalogue();
-		}, 60000);
+		}, 15000);
+	}
+
+	private stopAutoRefresh(): void {
+		if (this.refreshIntervalId !== null) {
+			clearInterval(this.refreshIntervalId);
+			this.refreshIntervalId = null;
+		}
 	}
 
 	CB_enabled: boolean = true;
+	canManageAdministration = false;
 	loadCatalogue(){
 		this.data = [];
 		// this.dataSource = this.dataSourceBuilder.create(this.data);

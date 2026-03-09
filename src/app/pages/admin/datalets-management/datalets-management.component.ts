@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NbCardModule } from '@nebular/theme';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { OidcUserInformationService } from '../../auth/services/oidc-user-information.service';
 
 interface TreeNode<T> {
   data: T;
@@ -39,7 +40,8 @@ export class DataletsManagementComponent implements OnInit {
   constructor(private dataSourceBuilder: NbTreeGridDataSourceBuilder<FSEntry>,
 		private restApi:CataloguesServiceService,
 		private dialogService: NbDialogService,
-    public translation: TranslateService ) { }
+    public translation: TranslateService,
+    private oidcUserInformationService: OidcUserInformationService ) { }
 
     data: TreeNode<FSEntry>[] = [];
 
@@ -51,8 +53,12 @@ export class DataletsManagementComponent implements OnInit {
   
     sortColumn: string;
     sortDirection: NbSortDirection = NbSortDirection.NONE;
+    canManageAdministration = false;
 
   ngOnInit(): void {
+    this.oidcUserInformationService.getRole().subscribe(roles => {
+      this.canManageAdministration = roles.includes('IDRA_ADMIN') || roles.includes('IDRA_EDITOR');
+    });
     this.listDatalets();
   }
 

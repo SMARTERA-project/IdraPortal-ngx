@@ -7,6 +7,7 @@ import { ODMSCatalogue } from '../../data-catalogue/model/odmscatalogue';
 import * as remoteCatalogueData from '../../../../assets/remoteCatalogues.json';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { OidcUserInformationService } from '../../auth/services/oidc-user-information.service';
 
 
 interface TreeNode<T> {
@@ -44,15 +45,21 @@ export class RemoteCataloguesComponent implements OnInit {
 	data: TreeNode<FSEntry>[] = [];
 
 	activeMode = [{text:'',value:true},{text:'',value:false}];
+	canManageAdministration = false;
 	allRemCat = []
 	//    allRemCatJson = [];
 	allRemCatJson: any = remoteCatalogueData
 
 	constructor(private dataSourceBuilder: NbTreeGridDataSourceBuilder<FSEntry>,
 		private restApi:CataloguesServiceService,
-		private router: Router,public translation: TranslateService,) { }
+		private router: Router,
+		public translation: TranslateService,
+		private oidcUserInformationService: OidcUserInformationService) { }
 
 	ngOnInit(): void {
+		this.oidcUserInformationService.getRole().subscribe(roles => {
+			this.canManageAdministration = roles.includes('IDRA_ADMIN') || roles.includes('IDRA_EDITOR');
+		});
 		// GET REM CATALOGUES LIST
 		this.restApi.getRemoteNodesJson().subscribe({
 			next: (infos) => {

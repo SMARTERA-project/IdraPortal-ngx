@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { NbCardModule, NbSelectModule } from '@nebular/theme';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
+import { OidcUserInformationService } from '../../auth/services/oidc-user-information.service';
 
 interface TreeNode<T> {
   data: T;
@@ -52,7 +53,8 @@ export class AdminConfigurationsComponent implements OnInit {
     private dataSourceBuilderCat: NbTreeGridDataSourceBuilder<FSEntryCat>,
     private restApi: CataloguesServiceService,
     public translation: TranslateService,
-    private dialogService: NbDialogService) { }
+    private dialogService: NbDialogService,
+    private oidcUserInformationService: OidcUserInformationService) { }
 
   data: TreeNode<FSEntry>[] = [];
   dataCat: TreeNode<FSEntryCat>[] = [];
@@ -88,6 +90,9 @@ export class AdminConfigurationsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.oidcUserInformationService.getRole().subscribe(roles => {
+      this.canManageAdministration = roles.includes('IDRA_ADMIN') || roles.includes('IDRA_EDITOR');
+    });
     this.restApi.getConfigurationManagement().subscribe((data: any) => {
       console.log(data);
       this.refreshPeriod = data.refresh_period;
@@ -135,6 +140,7 @@ export class AdminConfigurationsComponent implements OnInit {
   rdfMaxNumber: number = 0;
   contextBrokerFederation: boolean = false;
   contextBrokerUrl: string = '';
+  canManageAdministration = false;
 
   handleClickCatalogues() {
     let json = {

@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ConfigService } from 'ngx-config-json';
 import { Observable } from 'rxjs';
@@ -58,6 +58,14 @@ export class DataCataglogueAPIService {
 
   downloadFromUri(distribution:DCATDistribution):Observable<any>{
     return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/client/downloadFromUri?downloadFile=false&url=${encodeURIComponent(distribution.downloadURL)}&id=${distribution.id}`);
+  }
+
+  downloadFromUriAsBlob(distribution:DCATDistribution):Observable<HttpResponse<Blob>>{
+    const targetUrl = distribution.downloadURL || distribution.accessURL;
+    return this.http.get(
+      `${this.apiEndpoint}/Idra/api/v1/client/downloadFromUri?downloadFile=false&url=${encodeURIComponent(targetUrl)}&id=${distribution.id}`,
+      { observe: 'response', responseType: 'blob' }
+    );
   }
 
   getDatalets(catalogueId:string, datasetId:string, ditributionId:string):Observable<Array<Datalet>>{

@@ -56,9 +56,9 @@ export class OidcUserInformationService {
     ? (
         this.user.roles != undefined
         ? of(this.user.roles.map(role => role.toUpperCase()))
-        : (this.user.realm_access != undefined && this.user.realm_access.roles != undefined
+              : (this.user.realm_access != undefined && this.user.realm_access.roles != undefined
               ? of(this.user.realm_access.roles.map(role => role.toUpperCase()))
-              : of(['CITIZEN'])
+              : of(['IDRA_USER'])
           )
       )
     : of(['ANONYMOUS']);

@@ -3,17 +3,12 @@
  * Copyright Akveo. All Rights Reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
-import { enableProdMode, importProvidersFrom } from '@angular/core';
+import { importProvidersFrom } from '@angular/core';
 
 // import { AppModule } from './app/app.module';
-import { environment } from './environments/environment';
 import { AppModule } from './app/app.module';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-
-if (environment.production) {
-  enableProdMode();
-}
 
 bootstrapApplication(AppComponent, {
   providers: [importProvidersFrom(AppModule)]

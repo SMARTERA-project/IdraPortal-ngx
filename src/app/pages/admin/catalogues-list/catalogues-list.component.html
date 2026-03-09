@@ -20,7 +20,12 @@
           <ng-container [nbTreeGridColumnDef]="customColumn">
             <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef class="col-w-75">{{ 'CATALOGUE_LIST_ACTIVE' | translate }}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row">
-              <nb-toggle [checked]="row.data[customColumn]" status="success" (click)="activeCatalogue(row.data[defaultColumns[8]], row.data.index, row.data[customColumn])"></nb-toggle>
+              <nb-toggle
+                [checked]="row.data[customColumn]"
+                status="success"
+                [disabled]="!canManageAdministration"
+                (click)="canManageAdministration && activeCatalogue(row.data[defaultColumns[8]], row.data.index, row.data[customColumn])">
+              </nb-toggle>
             </td>
           </ng-container>
   
@@ -85,15 +90,19 @@
           <!-- ICONS -->
           <ng-container [nbTreeGridColumnDef]="iconColumn">
             <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef class="col-w-120">
-              <nb-icon nbTooltip="{{ 'ADD_CATALOGUE' | translate }}" icon="plus-circle-outline" [options]="{ animation: { type: 'zoom' } }" routerLink="./addCatalogue"></nb-icon>
-              <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_REMOTE_CATALOGUE_LIST' | translate }}" icon="list-outline" [options]="{ animation: { type: 'zoom' } }" routerLink="./remoteCatalogues"></nb-icon>
+              @if (canManageAdministration) {
+                <nb-icon nbTooltip="{{ 'ADD_CATALOGUE' | translate }}" icon="plus-circle-outline" [options]="{ animation: { type: 'zoom' } }" routerLink="./addCatalogue"></nb-icon>
+                <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_REMOTE_CATALOGUE_LIST' | translate }}" icon="list-outline" [options]="{ animation: { type: 'zoom' } }" routerLink="./remoteCatalogues"></nb-icon>
+              }
               <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_DOWNLOAD_DUMP' | translate }}" icon="download-outline" [options]="{ animation: { type: 'zoom' } }" (click)="downloadDump()"></nb-icon>
             </th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row">
-              <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_SEND_MQA_ANALYSIS' | translate }}" icon="bar-chart-outline" [options]="{ animation: { type: 'zoom' } }" (click)="sendMqaAnalisysCatalogue(row.data[defaultColumns[8]], row.data.index)"></nb-icon>
-              <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_SYNCHRONIZE_CATALOGUE' | translate }}" icon="sync-outline" [options]="{ animation: { type: 'zoom' } }" (click)="syncCatalogue(row.data[defaultColumns[8]], row.data.index)"></nb-icon>
-              <nb-icon nbTooltip="{{ 'MODIFY_CATALOGUE' | translate }}" icon="edit-outline" [options]="{ animation: { type: 'zoom' } }" (click)="modifyCatalogue(row.data[defaultColumns[8]])"></nb-icon>
-              <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_DELETE_CATALOGUE' | translate }}" icon="close-outline" [options]="{ animation: { type: 'zoom' } }" (click)="deleteCatalogue(row.data[defaultColumns[8]], row.data.index)"></nb-icon>
+              @if (canManageAdministration) {
+                <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_SEND_MQA_ANALYSIS' | translate }}" icon="bar-chart-outline" [options]="{ animation: { type: 'zoom' } }" (click)="sendMqaAnalisysCatalogue(row.data[defaultColumns[8]], row.data.index)"></nb-icon>
+                <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_SYNCHRONIZE_CATALOGUE' | translate }}" icon="sync-outline" [options]="{ animation: { type: 'zoom' } }" (click)="syncCatalogue(row.data[defaultColumns[8]], row.data.index)"></nb-icon>
+                <nb-icon nbTooltip="{{ 'MODIFY_CATALOGUE' | translate }}" icon="edit-outline" [options]="{ animation: { type: 'zoom' } }" (click)="modifyCatalogue(row.data[defaultColumns[8]])"></nb-icon>
+                <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_DELETE_CATALOGUE' | translate }}" icon="close-outline" [options]="{ animation: { type: 'zoom' } }" (click)="deleteCatalogue(row.data[defaultColumns[8]], row.data.index)"></nb-icon>
+              }
               <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_DOWNLOAD_DUMP' | translate }}" icon="download-outline" [options]="{ animation: { type: 'zoom' } }" (click)="downloadDump(row.data[defaultColumns[0]], row.data[defaultColumns[8]])"></nb-icon>
             </td>
           </ng-container>

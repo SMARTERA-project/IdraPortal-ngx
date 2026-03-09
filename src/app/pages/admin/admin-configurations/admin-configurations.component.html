@@ -9,27 +9,27 @@
               <nb-card class="minicard">
                 <nb-card-body class="d-flex flex-column align-items-left justify-content-left">
                   <h6 class="jumbotron-heading">{{ 'ADMIN_CATALOG_REFRESH_PERIOD' | translate }}</h6>
-                  <nb-select  [(ngModel)]="refreshPeriod" [selected]="refreshPeriod">
+                  <nb-select  [(ngModel)]="refreshPeriod" [selected]="refreshPeriod" [disabled]="!canManageAdministration">
                     <nb-option value="3600">{{ 'ADMIN_CATALOG_REFRESH_1H' | translate }}</nb-option>
                     <nb-option value="86400">{{ 'ADMIN_CATALOG_REFRESH_1D' | translate }}</nb-option>
                     <nb-option value="604800">{{ 'ADMIN_CATALOG_REFRESH_1W' | translate }}</nb-option>
                   </nb-select>
                   <div class="d-flex align-content-center mt-3">
                     <h6 class="jumbotron-heading align-self-center">{{ 'ADMIN_CATALOG_ENABLE_RDF' | translate }}</h6>
-                    <nb-checkbox class="align-self-center ml-1" status="primary" [(ngModel)]="rdfControls"></nb-checkbox>
+                    <nb-checkbox class="align-self-center ml-1" status="primary" [(ngModel)]="rdfControls" [disabled]="!canManageAdministration"></nb-checkbox>
                   </div>
                   @if (rdfControls == true) {<div class="d-flex align-content-center mt-3">
                     <h6 class="jumbotron-heading align-self-center">{{ 'ADMIN_CATALOG_ENABLE_RDF_SIZE' | translate }}</h6>
-                    <nb-checkbox class="align-self-center ml-1" status="primary" [(ngModel)]="rdfMaxSize"></nb-checkbox>
+                    <nb-checkbox class="align-self-center ml-1" status="primary" [(ngModel)]="rdfMaxSize" [disabled]="!canManageAdministration"></nb-checkbox>
                   </div>}
                   @if (rdfControls == true) {<h6 class="jumbotron-heading">{{ 'ADMIN_CATALOG_RDF_MAX' | translate }}</h6>}
-                  @if (rdfControls == true) {<input type="number" nbInput status="primary" placeholder="{{ 'ADMIN_CATALOG_RDF_MAX_PLACEHOLDER' | translate }}" [(ngModel)]="rdfMaxNumber">}
+                  @if (rdfControls == true) {<input type="number" nbInput status="primary" placeholder="{{ 'ADMIN_CATALOG_RDF_MAX_PLACEHOLDER' | translate }}" [(ngModel)]="rdfMaxNumber" [disabled]="!canManageAdministration">}
                 </nb-card-body>
               </nb-card>
             </div>
-            <div class="col-md-2">
+            @if (canManageAdministration) {<div class="col-md-2">
               <button nbButton hero status="primary" class="mt-2 btn-full-width" (click)="handleClickCatalogues()">{{ 'APPLY' | translate }}</button>
-            </div>
+            </div>}
           </div>
         </nb-accordion-item-body>
       </nb-accordion-item>
@@ -59,17 +59,19 @@
                     <ng-container [nbTreeGridColumnDef]="iconColumn">
                       <th nbTreeGridHeaderCell [nbSortHeader]="getSortDirection(iconColumn)" *nbTreeGridHeaderCellDef class="col-w-120">{{ 'ACTIONS' | translate }}</th>
                       <td nbTreeGridCell *nbTreeGridCellDef="let row">
-                        <nb-icon icon="edit-outline" [options]="{ animation: { type: 'zoom' } }" (click)="handleSparqlPrefixEdit(row.data.id, row.data[defaultColumns[0]], row.data[defaultColumns[1]])"></nb-icon>
-                        <nb-icon icon="close-outline" [options]="{ animation: { type: 'zoom' } }" (click)="handleSparqlPrefixDelete(row.data.id)"></nb-icon>
+                        @if (canManageAdministration) {
+                          <nb-icon icon="edit-outline" [options]="{ animation: { type: 'zoom' } }" (click)="handleSparqlPrefixEdit(row.data.id, row.data[defaultColumns[0]], row.data[defaultColumns[1]])"></nb-icon>
+                          <nb-icon icon="close-outline" [options]="{ animation: { type: 'zoom' } }" (click)="handleSparqlPrefixDelete(row.data.id)"></nb-icon>
+                        }
                       </td>
                     </ng-container>
                   </table>
                 </nb-card-body>
               </nb-card>
             </div>
-            <div class="col-md-2">
+            @if (canManageAdministration) {<div class="col-md-2">
               <button nbButton hero status="primary" class="mt-2 btn-full-width" (click)="handleSparqlPrefixOpenModal()">{{ 'ADMIN_SPARQL_ADD_PREFIX' | translate }}</button>
-            </div>
+            </div>}
           </div>
         </nb-accordion-item-body>
       </nb-accordion-item>
@@ -99,17 +101,19 @@
                     <ng-container [nbTreeGridColumnDef]="iconColumnCat">
                       <th nbTreeGridHeaderCell [nbSortHeader]="getSortDirection(iconColumnCat)" *nbTreeGridHeaderCellDef class="col-w-120">{{ 'ACTIONS' | translate }}</th>
                       <td nbTreeGridCell *nbTreeGridCellDef="let row">
-                        <nb-icon icon="edit-outline" [options]="{ animation: { type: 'zoom' } }" (click)="handleEditRemoteCatalogueOpenModal(row.data)"></nb-icon>
-                        <nb-icon icon="close-outline" [options]="{ animation: { type: 'zoom' } }" (click)="handleRemoteCataloguDelete(row.data.id, row.data.index)"></nb-icon>
+                        @if (canManageAdministration) {
+                          <nb-icon icon="edit-outline" [options]="{ animation: { type: 'zoom' } }" (click)="handleEditRemoteCatalogueOpenModal(row.data)"></nb-icon>
+                          <nb-icon icon="close-outline" [options]="{ animation: { type: 'zoom' } }" (click)="handleRemoteCataloguDelete(row.data.id, row.data.index)"></nb-icon>
+                        }
                       </td>
                     </ng-container>
                   </table>
                 </nb-card-body>
               </nb-card>
             </div>
-            <div class="col-md-2">
+            @if (canManageAdministration) {<div class="col-md-2">
               <button nbButton hero status="primary" class="mt-2 btn-full-width" (click)="handleRemoteCatalogueOpenModal()">{{ 'ADD_CATALOGUE' | translate }}</button>
-            </div>
+            </div>}
           </div>
         </nb-accordion-item-body>
       </nb-accordion-item>
@@ -123,16 +127,16 @@
                 <nb-card-body class="d-flex flex-column align-items-left justify-content-left">
                   <div class="d-flex align-content-center">
                     <h6 class="jumbotron-heading align-self-center">{{ 'ADMIN_CONTEXT_BROKER_ENABLE' | translate }}</h6>
-                    <nb-checkbox class="align-self-center ml-1" status="primary" [checked]="contextBrokerFederation" [(ngModel)]="contextBrokerFederation" (checkedChange)="handleContextBrokerFederation()"></nb-checkbox>
+                    <nb-checkbox class="align-self-center ml-1" status="primary" [checked]="contextBrokerFederation" [(ngModel)]="contextBrokerFederation" (checkedChange)="handleContextBrokerFederation()" [disabled]="!canManageAdministration"></nb-checkbox>
                   </div>
                   @if (contextBrokerFederation == true) {<h6 class="jumbotron-heading">{{ 'ADMIN_CONTEXT_BROKER_URL' | translate }}</h6>}
-                  @if (contextBrokerFederation == true) {<input type="text" nbInput status="primary" fullWidth placeholder="{{ 'ADMIN_CONTEXT_BROKER_URL_PLACEHOLDER' | translate }}" [(ngModel)]="contextBrokerUrl">}
+                  @if (contextBrokerFederation == true) {<input type="text" nbInput status="primary" fullWidth placeholder="{{ 'ADMIN_CONTEXT_BROKER_URL_PLACEHOLDER' | translate }}" [(ngModel)]="contextBrokerUrl" [disabled]="!canManageAdministration">}
                 </nb-card-body>
               </nb-card>
             </div>
-            <div class="col-md-2">
+            @if (canManageAdministration) {<div class="col-md-2">
               <button nbButton hero status="primary" class="mt-2 btn-full-width" (click)="handleClickCatalogues()">{{ 'APPLY' | translate }}</button>
-            </div>
+            </div>}
           </div>
         </nb-accordion-item-body>
       </nb-accordion-item>

@@ -34,7 +34,6 @@ import { RouterModule } from '@angular/router';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { provideCodeEditor } from '@ngstack/code-editor';
 import { NbAuthModule,  NbOAuth2AuthStrategy, NbOAuth2ClientAuthMethod, NbOAuth2GrantType, NbOAuth2ResponseType } from '@nebular/auth';
-import { environment } from '../environments/environment';
 import { OidcJWTToken } from './pages/auth/oidc/oidc';
 import { TokenInterceptor } from './pages/auth/services/token.interceptor';
 import { JwtHelperService, JwtModule } from '@auth0/angular-jwt';
@@ -45,6 +44,10 @@ class GenericConfig<T> {
 }
 
 const URL = 'https://raw.githubusercontent.com/BeOpen-project/IdraPortal-ngx-Translations';
+const DEFAULT_AUTH_PROFILE = 'oidc';
+const DEFAULT_CLIENT_ID = 'data-platform';
+const DEFAULT_CLIENT_SECRET = '';
+const DEFAULT_BASE_ENDPOINT = 'http://localhost/auth/realms/smartera/protocol/openid-connect';
 
 export class CustomTranslateLoader implements TranslateLoader {
   
@@ -96,13 +99,16 @@ export class CustomTranslateLoader implements TranslateLoader {
 
     NbSecurityModule.forRoot({
       accessControl: {
-        ADMIN: {
+        IDRA_ADMIN: {
           view: '*'
         },
-        MANAGER: {
+        IDRA_EDITOR: {
           view: ['home', 'sparql', 'catalogues', 'mqa', 'statistics', 'datasets', 'administration']	
         },
-        CITIZEN: {
+        IDRA_VIEWER: {
+          view: ['home', 'sparql', 'catalogues', 'datasets', 'mqa', 'statistics', 'administration']
+        },
+        IDRA_USER: {
           view: ['home', 'sparql', 'catalogues', 'datasets', 'mqa', 'statistics']
         }
       },
@@ -118,10 +124,10 @@ export class CustomTranslateLoader implements TranslateLoader {
     NbAuthModule.forRoot({
       strategies: [
         NbOAuth2AuthStrategy.setup({
-          name: environment.authProfile, 
-          clientId: environment.client_id,
-          clientSecret: environment.client_secret,
-          baseEndpoint: `${environment.idmBaseURL}/auth/realms/${environment.idmRealmName}/protocol/openid-connect`,
+          name: DEFAULT_AUTH_PROFILE,
+          clientId: DEFAULT_CLIENT_ID,
+          clientSecret: DEFAULT_CLIENT_SECRET,
+          baseEndpoint: DEFAULT_BASE_ENDPOINT,
           clientAuthMethod: NbOAuth2ClientAuthMethod.NONE,
           token: {
             endpoint: '/token',
