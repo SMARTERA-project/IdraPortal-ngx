@@ -18,6 +18,7 @@ import { SearchResult } from '../model/search-result';
 export class DataCataglogueAPIService {
 
   private apiEndpoint;
+  private readonly previewMaxMb = 15;
 
   constructor(private config:ConfigService<Record<string, any>>,private http:HttpClient) { 
     this.apiEndpoint=this.config.config["idra_base_url"];
@@ -63,7 +64,18 @@ export class DataCataglogueAPIService {
   downloadFromUriAsBlob(distribution:DCATDistribution):Observable<HttpResponse<Blob>>{
     const targetUrl = distribution.downloadURL || distribution.accessURL;
     return this.http.get(
-      `${this.apiEndpoint}/Idra/api/v1/client/downloadFromUri?downloadFile=false&url=${encodeURIComponent(targetUrl)}&id=${distribution.id}`,
+      `${this.apiEndpoint}/Idra/api/v1/client/downloadFromUri?downloadFile=true&isPreview=true&previewMaxMB=${this.previewMaxMb}&url=${encodeURIComponent(targetUrl)}&id=${distribution.id}`,
+      { observe: 'response', responseType: 'blob' }
+    );
+  }
+
+  downloadFromUriByUrlAsBlob(url: string, distributionId?: string | number): Observable<HttpResponse<Blob>> {
+    const idQuery = distributionId !== undefined && distributionId !== null
+      ? `&id=${encodeURIComponent(String(distributionId))}`
+      : '';
+
+    return this.http.get(
+      `${this.apiEndpoint}/Idra/api/v1/client/downloadFromUri?downloadFile=true&isPreview=true&previewMaxMB=${this.previewMaxMb}&url=${encodeURIComponent(url)}${idQuery}`,
       { observe: 'response', responseType: 'blob' }
     );
   }

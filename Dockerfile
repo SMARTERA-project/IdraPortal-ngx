@@ -1,6 +1,6 @@
 FROM node:24.11.0-alpine as builder
 ARG BUILD_CONFIGURATION=production
-ARG BASE_HREF=/
+ARG BASE_HREF=/IdraPortal/
 RUN mkdir -p /app
 WORKDIR /app
 COPY package.json /app

@@ -6,10 +6,11 @@ import * as L from "leaflet";
 // declare let L;
 import * as shp from "shpjs";
 import * as toGeoJson from 'togeojson';
-import JSZip from 'jszip';
 import proj4 from "proj4";
 import { TranslateModule } from '@ngx-translate/core';
 import { PreviewDialogComponent } from '../preview-dialog/preview-dialog.component';
+import { firstValueFrom } from 'rxjs';
+import { decodeBytesToText, extractPayloadEntries, ExtractedFileEntry, pickEntryByExtensions, pickFirstTextEntry } from '../utils/compressed-content.util';
 
 @Component({
   imports: [NbCardModule, NbSpinnerModule, TranslateModule, NbButtonModule],
@@ -107,205 +108,156 @@ export class GeoJsonDialogComponent {
     this.loading = false;
   }
   
-  openMap(distribution:DCATDistribution){
-    if(this.type == 'geojson'){
-      if(distribution.downloadURL.includes('.zip') || distribution.downloadURL.includes('.ZIP')){
-        this.restApi.downloadZipFromUrl(distribution).subscribe({
-          next: (res : Blob) => {
-            res.arrayBuffer().then((buffer) => {
-              var zip = new JSZip();
-              zip.loadAsync(buffer).then((zip) => {
-                zip.forEach((relativePath, zipEntry) => {
-                  zipEntry.async('string').then((content) => {
-                    this.loadGeoJson(content);
-                    this.text = content;
-                  }).catch((err) => {
-                    console.log(err);
-                    this.toastrService.danger("Could not load the file", "Error");
-                  });
-                });
-              })
-              .catch((err) => {
-                console.log(err);
-                this.toastrService.danger("Could not load the file", "Error");
-              });
-            }).catch((err) => {
-              console.log(err);
-              this.toastrService.danger("Could not load the file", "Error");
-            });
-          },
-          error: err => {
-            console.log(err);
-            this.toastrService.danger("Could not load the file", "Error");
-          }
-        })
-      } else{
-        this.restApi.downloadGeoJSONFromUrl(distribution).subscribe({
-          next: (res : string) => {
-            // console.log(res);
-            this.loadGeoJson(JSON.stringify(res))
-            this.text = res;
-          },
-          error: err => {
-            this.toastrService.danger("Could not load the GeoJSON file", "Error");
-          }
-        })
-      }
-    } else if(this.type == 'kml') {
-      if(distribution.downloadURL.includes('.zip') || distribution.downloadURL.includes('.ZIP')){
-        this.restApi.downloadZipFromUrl(distribution).subscribe({
-          next: (res : Blob) => {
-            res.arrayBuffer().then((buffer) => {
-              var zip = new JSZip();
-              zip.loadAsync(buffer).then((zip) => {
-                zip.forEach((relativePath, zipEntry) => {
-                  zipEntry.async('string').then((content) => {
-                    var kml = new DOMParser().parseFromString(content, 'text/xml');
-                    let data = toGeoJson.kml(kml);
-                    this.loadGeoJson(JSON.stringify(data));
-                    this.text = JSON.stringify(data);
-                  }).catch((err) => {
-                    console.log(err);
-                    this.toastrService.danger("Could not load the file", "Error");
-                  });
-                });
-              }).catch((err) => {
-                console.log(err);
-                this.toastrService.danger("Could not load the file", "Error");
-              });
-            }).catch((err) => {
-              console.log(err);
-              this.toastrService.danger("Could not load the file", "Error");
-            });
-          },
-          error: err => {
-            console.log(err);
-            this.toastrService.danger("Could not load the file", "Error");
-          }
-        })
-      } else{
-        this.restApi.downloadKMLFromUrl(distribution).subscribe({
-          next: (res : string) => {
-            // console.log(res);
-            var kml = new DOMParser().parseFromString(res, 'text/xml');
-            let data = toGeoJson.kml(kml);
-            this.loadGeoJson(JSON.stringify(data))
-            this.text = JSON.stringify(data);
-          },
-          error: err => {
-            this.toastrService.danger("Could not load the file", "Error");
-          }
-        })
-      }
-    } else if(this.type == 'shp'){
-      if(distribution.downloadURL.includes('.zip') || distribution.downloadURL.includes('.ZIP')){
+  async openMap(distribution:DCATDistribution){
+    try {
+      const entries = await this.downloadDistributionPayload(distribution);
 
-        this.restApi.downloadZipFromUrl(distribution).subscribe({
-          next: (res : Blob) => {
-        
-            res.arrayBuffer().then((arrayBufferData) => {
-              JSZip.loadAsync(arrayBufferData).then((z) => {
-        
-                let zip = z.file(/.+/);
-        
-                const names = [];
-                const whiteList = [];
-                const out1 = {};
-        
-                zip.map((a) => {
-                  let result;
-                  if (
-                    a.name.slice(-3).toLowerCase() === "shp" ||
-                    a.name.slice(-3).toLowerCase() === "dbf"
-                  ) {
-                    result = a;
-                  } else {
-                    result = a;
-                  }
-                  out1[a.name] = result;
-                  return out1;
-                });
-        
-                zip = out1 as any;
-                const out2 = {};
-                const promises = [];
-        
-                for (const key in zip) {
-                  if (key.indexOf("__MACOSX") !== -1) {
-                    continue;
-                  }
-                  if (key.slice(-3).toLowerCase() === "shp") {
-                    names.push(key.slice(0, -4));
-                    promises.push(
-                      zip[key].async("arraybuffer").then((s) => {
-                        out2[key.slice(0, -3) + key.slice(-3).toLowerCase()] = s;
-                      })
-                    );
-                  } else if (key.slice(-3).toLowerCase() === "prj") {
-                    promises.push(
-                      zip[key].async("string").then((s) => {
-                        out2[key.slice(0, -3) + key.slice(-3).toLowerCase()] = proj4(s);
-                      })
-                    );
-                  } else if (
-                    key.slice(-4).toLowerCase() === "json" ||
-                    whiteList.indexOf(key.split(".").pop()) > -1
-                  ) {
-                    names.push(key.slice(0, -3) + key.slice(-3).toLowerCase());
-                  } else if (
-                    key.slice(-3).toLowerCase() === "dbf" ||
-                    key.slice(-3).toLowerCase() === "cpg"
-                  ) {
-                    promises.push(
-                      zip[key].async("arraybuffer").then((s) => {
-                        out2[key.slice(0, -3) + key.slice(-3).toLowerCase()] = s;
-                      })
-                    );
-                  }
-                }
-        
-                Promise.all(promises).then(async (d) => {
-                  var features;
-                  try {
-                    features = shp.combine([
-                      shp.parseShp(out2[names + ".shp"], out2[names + ".prj"]),
-                      shp.parseDbf(out2[names + ".dbf"])
-                    ]);
-                  } catch (error) {
-                    if ((names.length === 0) && (out2!)) {
-                      console.error("not a shape file");
-                      this.toastrService.danger("Not a shapefile", "Error");
-                      return
-                    }
-                    features = await this.extractAndDecodeShapefiles(res);
-                    this.text = JSON.stringify(features);
-                    this.loadShapeFile(features);
-                    return
-                  }
-      
-                  this.text = JSON.stringify(features);
-                  this.loadShapeFile(features.features);
-                });
-              });
-            });
-          },
-          error: err => {
-            console.log(err);
-            this.toastrService.danger("Could not load the file", "Error");
-          }
-        })
+      if (this.type == 'geojson') {
+        await this.handleGeoJsonEntries(entries);
+        return;
       }
-    } else {
-      this.toastrService.danger("Format not valid", "Error");
-      
-      this.close();
-      this.dialogService.open(PreviewDialogComponent, {
-        context: {
-          title: this.title,
-          text: this.text,
-        },
-      })
+
+      if (this.type == 'kml') {
+        await this.handleKmlEntries(entries);
+        return;
+      }
+
+      if (this.type == 'shp') {
+        await this.handleShapeEntries(entries);
+        return;
+      }
+
+      throw new Error('Format not valid');
+    } catch (error) {
+      console.log(error);
+      if (this.isHttpStatus(error, 413)) {
+        this.toastrService.danger("File size too large to preview, but you can still download it.", "Error");
+      } else {
+        this.toastrService.danger("Could not load the file", "Error");
+      }
+      this.loading = false;
+
+      if (this.text) {
+        this.close();
+        this.dialogService.open(PreviewDialogComponent, {
+          context: {
+            title: this.title,
+            text: this.text,
+          },
+        });
+      }
     }
+  }
+
+  private isHttpStatus(error: unknown, status: number): boolean {
+    const maybeError = error as { status?: number } | null;
+    return !!maybeError && maybeError.status === status;
+  }
+
+  private async downloadDistributionPayload(distribution: DCATDistribution): Promise<ExtractedFileEntry[]> {
+    const response = await firstValueFrom(this.restApi.downloadFromUriAsBlob(distribution));
+    const payloadBlob = response.body;
+
+    if (!payloadBlob) {
+      throw new Error('Could not load the file');
+    }
+
+    const payloadBuffer = await payloadBlob.arrayBuffer();
+    const suggestedName = distribution.downloadURL || distribution.accessURL || this.title || 'payload';
+    const extracted = await extractPayloadEntries(payloadBuffer, suggestedName);
+    return extracted.entries;
+  }
+
+  private async handleGeoJsonEntries(entries: ExtractedFileEntry[]): Promise<void> {
+    const selectedEntry = pickEntryByExtensions(entries, ['geojson', 'json']) || pickFirstTextEntry(entries, ['geojson', 'json']);
+    if (!selectedEntry) {
+      throw new Error('No GeoJSON content found');
+    }
+
+    const content = decodeBytesToText(selectedEntry.bytes);
+    this.loadGeoJson(content);
+    this.text = content;
+  }
+
+  private async handleKmlEntries(entries: ExtractedFileEntry[]): Promise<void> {
+    const selectedEntry = pickEntryByExtensions(entries, ['kml', 'xml']) || pickFirstTextEntry(entries, ['kml', 'xml']);
+    if (!selectedEntry) {
+      throw new Error('No KML content found');
+    }
+
+    const kml = new DOMParser().parseFromString(decodeBytesToText(selectedEntry.bytes), 'text/xml');
+    const data = toGeoJson.kml(kml);
+    const geoJsonText = JSON.stringify(data);
+    this.loadGeoJson(geoJsonText);
+    this.text = geoJsonText;
+  }
+
+  private async handleShapeEntries(entries: ExtractedFileEntry[]): Promise<void> {
+    const groupedFiles = new Map<string, { shp?: Uint8Array; dbf?: Uint8Array; prj?: string }>();
+
+    entries.forEach((entry) => {
+      const normalizedName = entry.name.replace(/\\/g, '/');
+      if (normalizedName.toLowerCase().includes('__macosx/')) {
+        return;
+      }
+
+      const lastDot = normalizedName.lastIndexOf('.');
+      if (lastDot < 0) {
+        return;
+      }
+
+      const extension = normalizedName.slice(lastDot + 1).toLowerCase();
+      const baseName = normalizedName.slice(0, lastDot);
+      const current = groupedFiles.get(baseName) || {};
+
+      if (extension === 'shp') {
+        current.shp = entry.bytes;
+      } else if (extension === 'dbf') {
+        current.dbf = entry.bytes;
+      } else if (extension === 'prj') {
+        current.prj = decodeBytesToText(entry.bytes);
+      }
+
+      groupedFiles.set(baseName, current);
+    });
+
+    const allFeatures = [];
+
+    for (const grouped of groupedFiles.values()) {
+      if (!grouped.shp || !grouped.dbf) {
+        continue;
+      }
+
+      let projection;
+      if (grouped.prj) {
+        try {
+          projection = proj4(grouped.prj);
+        } catch (_error) {
+          projection = undefined;
+        }
+      }
+
+      const parsedShp = projection
+        ? await shp.parseShp(this.toArrayBuffer(grouped.shp), projection)
+        : await shp.parseShp(this.toArrayBuffer(grouped.shp));
+      const parsedDbf = await shp.parseDbf(this.toArrayBuffer(grouped.dbf));
+      const combined = shp.combine([parsedShp, parsedDbf]);
+
+      if (combined && combined.features && combined.features.length) {
+        allFeatures.push(...combined.features);
+      }
+    }
+
+    if (!allFeatures.length) {
+      throw new Error('Not a shapefile');
+    }
+
+    this.text = JSON.stringify(allFeatures);
+    this.loadShapeFile(allFeatures);
+  }
+
+  private toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+    return Uint8Array.from(bytes).buffer;
   }
 
   public loadShapeFile(file: any) {
@@ -393,58 +345,12 @@ export class GeoJsonDialogComponent {
     // does this feature have a property named popupContent?
     if (feature.properties) {
       // map json properties to popup
-      let popupContent = "<p style='color: black !important;'>";
+      let popupContent = "<p>";
       for (const key in feature.properties) {
         popupContent += "- "+ key + ": " + feature.properties[key] + "<br>";
       }
       popupContent += "</p>";
       layer.bindPopup(popupContent);
     }
-  }
-  async extractAndDecodeShapefiles(file: Blob): Promise<any> {
-    const zip = new JSZip();
-    const zipContent = await zip.loadAsync(file);
-    const geoJsonArray = [];
-    console.log("sto iterando i file")
-
-    var prjFileName;
-    var havePRJ = false;
-    var prjFileContent;
-    // Itera sui file all'interno del file .zip
-    await Promise.all(Object.keys(zipContent.files).map(async (fileName) => {
-      try {
-        if (fileName.endsWith('.prj')) {
-          havePRJ = true;
-          const lastDotPRJ = fileName.lastIndexOf('.');
-          prjFileName = fileName.slice(0, lastDotPRJ);
-          prjFileContent = await zipContent.files[fileName].async('arraybuffer');
-          // console.log("creato file prj" + fileName);
-        }
-        if (fileName.endsWith('.shp') || fileName.endsWith('.shx')) {
-          const shpFileContent = await zipContent.files[fileName].async('arraybuffer');
-          const lastDotSHP = fileName.lastIndexOf('.');
-          var shpFileName = fileName.slice(0, lastDotSHP);
-          if (havePRJ && prjFileName === shpFileName) {
-            const geoJson = await shp.parseShp(shpFileContent, prjFileContent);
-            geoJsonArray.push(geoJson);
-            havePRJ = false;
-          } else {
-            const geoJson = await shp.parseShp(shpFileContent);
-            geoJsonArray.push(geoJson);
-          }
-          // console.log("aggiunto file shp" + fileName);
-        } else if (fileName.endsWith('.dbf')) {
-          const dbfFileContent = await zipContent.files[fileName].async('arraybuffer');
-          const geoJson = await shp.parseDbf(dbfFileContent);
-          // console.log("aggiunto file dbf" + fileName);
-          geoJsonArray.push(geoJson);
-        }
-      } catch (error) {
-        console.log("error: " + fileName + ": " + error);
-      }
-    }));
-    // console.log("raggiunto fine file")
-
-    return geoJsonArray;
   }
 }

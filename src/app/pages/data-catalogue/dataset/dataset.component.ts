@@ -334,7 +334,8 @@ export class DatasetComponent implements OnInit, OnDestroy {
           this.dialogService.open(PreviewDialogComponent, {
             context: {
               title: localizedDistributionTitle,
-              url: distribution.accessURL,
+              url: distribution.downloadURL || distribution.accessURL,
+              distribution: distribution,
             },
           })
         }
