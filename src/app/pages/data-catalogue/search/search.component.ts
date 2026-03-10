@@ -78,9 +78,11 @@ export class SearchComponent implements OnInit, OnDestroy {
     (this.searchResponse as any).results = (this.searchResponse as any).results || [];
     (this.searchResponse as any).count = (this.searchResponse as any).count || 0;
     this.selectedLanguage = (this.translation.currentLang || 'en').toLowerCase();
+    this.searchRequest.language = this.selectedLanguage;
     this.languageSubscription = this.translation.onLangChange.subscribe((event) => {
       this.selectedLanguage = (event?.lang || 'en').toLowerCase();
-      (this.searchResponse?.results || []).forEach((dataset: DCATDataset) => this.processDataset(dataset));
+      this.searchRequest.language = this.selectedLanguage;
+      this.searchDataset();
     });
     this.loading=true
     this.restApi.getCataloguesInfo().subscribe({
@@ -171,6 +173,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     console.log(this.searchResponse.facets)
     this.loading = true
     this.filtersTags = [];
+    this.searchRequest.language = this.selectedLanguage;
 
     this.searchRequest.filters.forEach(x => {
       if (x.field == 'ALL' && x.value != '') {

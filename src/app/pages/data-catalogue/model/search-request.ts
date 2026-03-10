@@ -14,6 +14,7 @@ export class SearchRequest {
   start: number=0;
   nodes?: number[]=[];
   hasHvdCategory?: boolean;
+  language?: string;
 
   constructor(){}
 }

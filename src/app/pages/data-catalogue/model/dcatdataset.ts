@@ -8,6 +8,7 @@ import { Relationship } from "./relationship";
 import { SKOSConcept } from "./skosconcept";
 import { VCardOrganization } from "./vcard-organization";
 import { DcatDetails } from "./dcatdetails";
+import { DcatKeyword } from "./dcatkeyword";
 
 export class FormatCount{
   format:string;
@@ -26,6 +27,7 @@ export class DCATDataset {
   publisher?: FOAFAgent;
   contactPoint?: VCardOrganization[];
   keywords?: string[];
+  keywordDetails?: DcatKeyword[];
   accessRights?: string;
   conformsTo?: DCTStandard[];
   documentation?: string[];
