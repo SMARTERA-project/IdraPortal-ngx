@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { CataloguesServiceService } from '../../services/catalogues-service.service';
 import { NbAccordionModule, NbButtonModule, NbCheckboxModule, NbDialogService, NbIconModule, NbInputModule, NbSortDirection, NbSortRequest, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule } from '@nebular/theme';
 import { Md5 } from 'ts-md5';
@@ -47,7 +49,9 @@ interface FSEntryCat {
 })
 
 
-export class AdminConfigurationsComponent implements OnInit {
+export class AdminConfigurationsComponent implements OnInit, OnDestroy {
+
+  private destroy$ = new Subject<void>();
 
   constructor(private dataSourceBuilder: NbTreeGridDataSourceBuilder<FSEntry>,
     private dataSourceBuilderCat: NbTreeGridDataSourceBuilder<FSEntryCat>,
@@ -55,6 +59,11 @@ export class AdminConfigurationsComponent implements OnInit {
     public translation: TranslateService,
     private dialogService: NbDialogService,
     private oidcUserInformationService: OidcUserInformationService) { }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   data: TreeNode<FSEntry>[] = [];
   dataCat: TreeNode<FSEntryCat>[] = [];
@@ -90,11 +99,10 @@ export class AdminConfigurationsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.oidcUserInformationService.getRole().subscribe(roles => {
+    this.oidcUserInformationService.getRole().pipe(takeUntil(this.destroy$)).subscribe(roles => {
       this.canManageAdministration = roles.includes('IDRA_ADMIN') || roles.includes('IDRA_EDITOR');
     });
-    this.restApi.getConfigurationManagement().subscribe((data: any) => {
-      console.log(data);
+    this.restApi.getConfigurationManagement().pipe(takeUntil(this.destroy$)).subscribe((data: any) => {
       this.refreshPeriod = data.refresh_period;
       this.rdfControls = (data.rdf_undefined_content_length == 'true');
       this.rdfMaxSize = (data.rdf_undefined_dimension == 'true');
@@ -113,8 +121,7 @@ export class AdminConfigurationsComponent implements OnInit {
   listPrefixes() {
     this.data = [];
 
-    this.restApi.listPrefixes().subscribe((data: any) => {
-      console.log(data);
+    this.restApi.listPrefixes().pipe(takeUntil(this.destroy$)).subscribe((data: any) => {
       data.forEach(element => {
         this.data.push({ data: { Prefix: element.prefix, Namespace: element.namespace, id: element.id } });
       });
@@ -125,8 +132,7 @@ export class AdminConfigurationsComponent implements OnInit {
   listRemoteCatalogues() {
     this.dataCat = [];
 
-    this.restApi.listRemoteCatalogues().subscribe((data: any) => {
-      console.log(data);
+    this.restApi.listRemoteCatalogues().pipe(takeUntil(this.destroy$)).subscribe((data: any) => {
       data.forEach(element => {
         this.dataCat.push({ data: { Catalogue: element.catalogueName, URL: element.URL, editable: element.editable, isIdra: element.isIdra, id: element.id, username: element.username, password: element.password, clientID: element.clientID, clientSecret: element.clientSecret, portal: element.portal } });
       });
@@ -150,9 +156,7 @@ export class AdminConfigurationsComponent implements OnInit {
       "rdf_max_dimension": this.rdfMaxNumber.toString(),
       "orionUrl": this.contextBrokerUrl
     };
-    this.restApi.updateConfiguration(json).subscribe((data: any) => {
-      console.log(data);
-    });
+    this.restApi.updateConfiguration(json).subscribe();
   }
 
   handleContextBrokerFederation() {
@@ -169,14 +173,12 @@ export class AdminConfigurationsComponent implements OnInit {
       },
     }).onClose.subscribe(res => {
       if (res.prefix != 0 && res.namespace != 0) {
-        console.log(res);
         let json = {
           "prefix": res.prefix,
           "namespace": res.namespace
         };
-        this.restApi.createPrefix(json).subscribe((data: any) => {
+        this.restApi.createPrefix(json).subscribe(() => {
           this.listPrefixes();
-          console.log(data);
         });
       }
     });
@@ -185,8 +187,7 @@ export class AdminConfigurationsComponent implements OnInit {
   handleSparqlPrefixDelete(id: string) {
 
     if (confirm("Are you sure you want to delete this element?")) {
-      this.restApi.deletePrefix(id).subscribe((data: any) => {
-        console.log(data);
+      this.restApi.deletePrefix(id).subscribe(() => {
         this.listPrefixes();
       });
     }
@@ -202,15 +203,13 @@ export class AdminConfigurationsComponent implements OnInit {
       },
     }).onClose.subscribe(res => {
       if (res.prefix != 0 && res.namespace != 0) {
-        console.log(res);
         let json = {
           "prefix": res.prefix,
           "namespace": res.namespace,
           "id": id
         };
-        this.restApi.modifyPrefix(json, id).subscribe((data: any) => {
+        this.restApi.modifyPrefix(json, id).subscribe(() => {
           this.listPrefixes();
-          console.log(data);
         });
       }
     });
@@ -224,7 +223,6 @@ export class AdminConfigurationsComponent implements OnInit {
       },
     }).onClose.subscribe(res => {
       if (res.catalogueName != 0 && res.catalogueURL != 0 && res.catalogueType != 0) {
-        console.log(res);
         let json = {
           "catalogueName": res.catalogueName,
           "URL": res.catalogueURL,
@@ -242,9 +240,8 @@ export class AdminConfigurationsComponent implements OnInit {
           json["clientSecret"] = res.clientSecret;
           json["portal"] = res.portalURL;
         }
-        this.restApi.createRemoteCatalogue(json).subscribe((data: any) => {
+        this.restApi.createRemoteCatalogue(json).subscribe(() => {
           this.listRemoteCatalogues();
-          console.log(data);
         });
       }
     });
@@ -267,7 +264,6 @@ export class AdminConfigurationsComponent implements OnInit {
       },
     }).onClose.subscribe(res => {
       if (res.catalogueName != 0 && res.catalogueURL != 0 && res.catalogueType != 0) {
-        console.log(res);
         let json = {
           "catalogueName": res.catalogueName,
           "URL": res.catalogueURL,
@@ -285,9 +281,8 @@ export class AdminConfigurationsComponent implements OnInit {
           json["clientSecret"] = res.clientSecret;
           json["portal"] = res.portalURL;
         }
-        this.restApi.modifyRemoteCatalogue(json, obj.id).subscribe((data: any) => {
+        this.restApi.modifyRemoteCatalogue(json, obj.id).subscribe(() => {
           this.listRemoteCatalogues();
-          console.log(data);
         });
       }
     });
@@ -295,8 +290,7 @@ export class AdminConfigurationsComponent implements OnInit {
 
   handleRemoteCataloguDelete(id: string) {
     if (confirm("Are you sure you want to delete this element?")) {
-      this.restApi.deleteRemoteCatalogue(id).subscribe((data: any) => {
-        console.log(data);
+      this.restApi.deleteRemoteCatalogue(id).subscribe(() => {
         this.listRemoteCatalogues();
       });
     }

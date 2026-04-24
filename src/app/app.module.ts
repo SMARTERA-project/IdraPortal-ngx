@@ -116,8 +116,8 @@ export class CustomTranslateLoader implements TranslateLoader {
     JwtModule.forRoot({
       config: {
         tokenGetter: () => {
-          return localStorage.getItem('token');
-
+          // C6: sessionStorage limits XSS exposure — token cleared on tab close
+          return sessionStorage.getItem('token');
         }
       }
     }),

@@ -35,6 +35,9 @@
                         </nb-select>
                     </div>
                     <div class="card-body">
+                        @if (!mostActiveHasValues) {
+                            <div class="text-muted mb-2">No catalogue activity in selected interval.</div>
+                        }
                         <div echarts [options]="optionsMostActive" [merge]="dataMostActive" class="demo-chart" [autoResize]="true"></div>
                     </div>
                 </div>

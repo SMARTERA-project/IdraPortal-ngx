@@ -14,6 +14,8 @@ import { ConfigService } from 'ngx-config-json';
 import { NbCardModule } from '@nebular/theme';
 import { TranslateModule } from '@ngx-translate/core';
 import { OidcUserInformationService } from '../../auth/services/oidc-user-information.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 
 interface TreeNode<T> {
@@ -56,6 +58,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 	id=0;
 	totalCatalogues;
 	private refreshIntervalId: ReturnType<typeof setInterval> | null = null;
+	private destroy$ = new Subject<void>();
 
 	cataloguesMoreInfos: ODMSCatalogue
 	data: TreeNode<FSEntry>[] = [];
@@ -338,7 +341,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnInit(): void {
-		this.oidcUserInformationService.getRole().subscribe(roles => {
+		this.oidcUserInformationService.getRole().pipe(takeUntil(this.destroy$)).subscribe(roles => {
 			this.canManageAdministration = roles.includes('IDRA_ADMIN') || roles.includes('IDRA_EDITOR');
 		});
 		this.loadCatalogue();
@@ -347,6 +350,8 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 
 	ngOnDestroy(): void {
 		this.stopAutoRefresh();
+		this.destroy$.next();
+		this.destroy$.complete();
 	}
 
 	private startAutoRefresh(): void {
@@ -494,7 +499,6 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 
 	setMode(){
 		this.messageEvent.emit(this.message);
-		console.log("\n HAI PREMUTO ADD");
 	}
 
 

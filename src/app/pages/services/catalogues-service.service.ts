@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 
 import { HttpClient } from '@angular/common/http';
 import { ConfigService } from 'ngx-config-json';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Datalet } from '../data-catalogue/model/datalet';
 import { DCATDataset } from '../data-catalogue/model/dcatdataset';
 import { DCATDistribution } from '../data-catalogue/model/dcatdistribution';
@@ -92,7 +93,7 @@ export class CataloguesServiceService {
   }
 	//getRemoteNodes
   getRemoteNodesJson():Observable<any>{
-    return this.http.get<any>(`http://localhost/catalogue.json`);
+    return this.http.get<any>(`${this.apiEndpoint}/catalogue.json`);
   }
 
   //getSelectedRemCatIdra
@@ -101,22 +102,11 @@ export class CataloguesServiceService {
   }
 
   //getSelectedRemCatNotIdra
-  getSelectedRemCatNotIdra(url: string): Promise<any> {
-      return fetch(url)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(data => {
-          return data;
-        })
-        .catch(error => {
-          console.error("Fetch error:", error);
-          return null;
-        });
-    }
+  getSelectedRemCatNotIdra(url: string): Observable<any> {
+    return this.http.get<any>(url).pipe(
+      catchError(() => of(null))
+    );
+  }
 
 
 
@@ -214,14 +204,9 @@ export class CataloguesServiceService {
     return new Promise((resolve,reject)=>{
       this.http.post(`${this.mqaEndpoint}/submit/auth`, json, {
         headers: {
-          'Content-Type':  'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Methods': 'POST',
+          'Content-Type': 'application/json',
         },
-      },
-      
-      )
+      })
       .subscribe({
         next: (data: any) => {
           this.toastr.show('Analisys submitted', 'Success', { status: 'success', duration: 3000, destroyByClick: true, position: NbGlobalPhysicalPosition.TOP_RIGHT});

@@ -286,12 +286,7 @@ export class PreviewDialogComponent implements AfterViewInit, OnDestroy {
   }
 
   private renderTooLargeMessage(): void {
-    const container = this.getContainer();
-    if (!container) {
-      return;
-    }
-
-    container.innerHTML = '<div style="color: red; font-weight: bold; font-size: 1.2em;">File size too large to preview, but you can still download it.</div>';
+    this.renderErrorMessage('File size too large to preview, but you can still download it.');
   }
 
   private renderErrorMessage(message: string): void {
@@ -299,8 +294,13 @@ export class PreviewDialogComponent implements AfterViewInit, OnDestroy {
     if (!container) {
       return;
     }
-
-    container.innerHTML = `<div style="color: red; font-weight: bold; font-size: 1.2em;">${message}</div>`;
+    // C5: build element programmatically — no innerHTML with dynamic content
+    const div = document.createElement('div');
+    div.style.color = 'red';
+    div.style.fontWeight = 'bold';
+    div.style.fontSize = '1.2em';
+    div.textContent = message;
+    container.replaceChildren(div);
   }
 
   private isGoogleViewerOnlyContent(contentType: string): boolean {

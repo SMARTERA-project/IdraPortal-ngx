@@ -6,27 +6,33 @@ import { AddCatalogueComponent } from './add-catalogue/add-catalogue.component';
 import { RemoteCataloguesComponent } from './remote-catalogues/remote-catalogues.component';
 import { DataletsManagementComponent } from './datalets-management/datalets-management.component';
 import { AdminConfigurationsComponent } from './admin-configurations/admin-configurations.component';
+import { AdminGuard } from '../auth/services/admin.guard';
 
 const routes: Routes = [
 {
     path: 'adminCatalogues',
-    component: CataloguesListComponent
+    component: CataloguesListComponent,
+    canActivate: [AdminGuard]
   },
 {
     path: 'dataletsManagement',
-    component: DataletsManagementComponent
+    component: DataletsManagementComponent,
+    canActivate: [AdminGuard]
   },
 {
   path:'adminCatalogues/addCatalogue',
-  component: AddCatalogueComponent
+  component: AddCatalogueComponent,
+  canActivate: [AdminGuard]
 },
 {
   path:'adminCatalogues/remoteCatalogues',
-  component: RemoteCataloguesComponent
+  component: RemoteCataloguesComponent,
+  canActivate: [AdminGuard]
 },
 {
   path:'configuration',
-  component: AdminConfigurationsComponent
+  component: AdminConfigurationsComponent,
+  canActivate: [AdminGuard]
 }
 ];
 

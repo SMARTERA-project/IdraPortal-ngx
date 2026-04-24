@@ -20,14 +20,7 @@ export class CataloguesService {
 
   getCatalogueList(): any {
     return new Promise((resolve,reject)=>{
-      this.http.get(`${this.apiEndpoint}/Idra/api/v1/client/catalogues?withImage=true&orderBy=name&orderType=asc`, {
-        headers: {
-          'Content-Type':  'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Methods': 'GET',
-        },
-      },)
+      this.http.get(`${this.apiEndpoint}/Idra/api/v1/client/catalogues?withImage=true&orderBy=name&orderType=asc`)
       .subscribe({
         next: (data: any) => {
           resolve(data)

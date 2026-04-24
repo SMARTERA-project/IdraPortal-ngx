@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NbButtonModule, NbDialogModule, NbDialogService, NbIconModule, NbSortDirection, NbSortRequest, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule } from '@nebular/theme';
 import { CataloguesServiceService } from '../../services/catalogues-service.service';
 import { DataletDialogComponent } from './dialog/datalet-dialog.component';
@@ -7,6 +7,8 @@ import { NbCardModule } from '@nebular/theme';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { OidcUserInformationService } from '../../auth/services/oidc-user-information.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 interface TreeNode<T> {
   data: T;
@@ -35,13 +37,20 @@ interface FSEntry {
   templateUrl: './datalets-management.component.html',
   styleUrls: ['./datalets-management.component.scss']
 })
-export class DataletsManagementComponent implements OnInit {
-	
+export class DataletsManagementComponent implements OnInit, OnDestroy {
+
+  private destroy$ = new Subject<void>();
+
   constructor(private dataSourceBuilder: NbTreeGridDataSourceBuilder<FSEntry>,
 		private restApi:CataloguesServiceService,
 		private dialogService: NbDialogService,
     public translation: TranslateService,
     private oidcUserInformationService: OidcUserInformationService ) { }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
     data: TreeNode<FSEntry>[] = [];
 
@@ -56,7 +65,7 @@ export class DataletsManagementComponent implements OnInit {
     canManageAdministration = false;
 
   ngOnInit(): void {
-    this.oidcUserInformationService.getRole().subscribe(roles => {
+    this.oidcUserInformationService.getRole().pipe(takeUntil(this.destroy$)).subscribe(roles => {
       this.canManageAdministration = roles.includes('IDRA_ADMIN') || roles.includes('IDRA_EDITOR');
     });
     this.listDatalets();
@@ -65,8 +74,7 @@ export class DataletsManagementComponent implements OnInit {
   listDatalets(){
 		this.data = [];
 
-		this.restApi.listDatalets().subscribe((data: any) => {
-      console.log(data);
+		this.restApi.listDatalets().pipe(takeUntil(this.destroy$)).subscribe((data: any) => {
 			data.forEach(element => {
 				this.data.push({ data: element });
 			});
@@ -96,7 +104,7 @@ export class DataletsManagementComponent implements OnInit {
 
   deleteDatalet(id: string, nodeID: string, datasetID: string, distributionID: string){
     if(confirm("Are you sure to delete this datalet?")) {
-      this.restApi.deleteDatalet(id, nodeID, datasetID, distributionID).subscribe((data: any) => {
+      this.restApi.deleteDatalet(id, nodeID, datasetID, distributionID).pipe(takeUntil(this.destroy$)).subscribe((data: any) => {
         this.listDatalets();
       });
     }

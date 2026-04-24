@@ -7,7 +7,6 @@ import { Router } from '@angular/router';
 import { NbButton, NbButtonModule, NbCheckboxModule, NbDatepickerModule, NbIconModule, NbInputModule, NbListModule, NbSelectModule, NbTabsetModule, NbTagComponent, NbTagInputAddEvent, NbTagModule, NbTooltipModule } from '@nebular/theme';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { error } from 'console';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -189,7 +188,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         params.euroVocFilter.sourceLanguage = this.sourceLanguage;
         params.euroVocFilter.targetLanguages = this.targetsLanguage;
       }
-      console.log("dates: ",this.releasedDate, this.updatedDate)
       if(this.releasedDate.length > 0){
         params['releaseDate'] = {
           start: this.releasedDate[0],
@@ -202,7 +200,6 @@ export class HomeComponent implements OnInit, OnDestroy {
           end: this.updatedDate[1]
         }
       }
-      console.log("params: ", params)
       this.router.navigate(['/pages/datasets'], {
         queryParams: { params: JSON.stringify(params), advancedSearch: true }
       })
@@ -285,8 +282,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.selectedCatalogues_prev = this.selectedCatalogues;
         this.loadTagCloud();
       },
-      error: (err)=>{
-        console.log(err);
+      error: (_err)=>{
       }
     })
   }
@@ -311,8 +307,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.tags = tags.slice(0, 30);
         this.classes = this.tags.map((x) => this.randomClass());
       },
-      error: (err) => {
-        console.log(err);
+      error: (_err) => {
       }
     });
   }
@@ -355,7 +350,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   searchCategory(category:any){
-    console.log(category)
     this.router.navigate(['/pages/datasets'], {queryParams:{search_value: category.value, text: category.text}})
   }
 }

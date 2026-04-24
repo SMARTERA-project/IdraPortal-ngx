@@ -15,7 +15,6 @@ export class TokenInterceptor implements HttpInterceptor {
   constructor(public auth: NbAuthService, private config: ConfigService<Record<string, any>>) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    console.log('Intercepting request:', req.url);
 
     const skipAuthEndpoints = [
       '/oauth2/token',
@@ -26,7 +25,6 @@ export class TokenInterceptor implements HttpInterceptor {
     ];
 
     if (req.url.indexOf('/assets/') > -1) {
-      console.log('Request to assets, skipping interceptor.');
       return next.handle(req);
     }
 
@@ -39,7 +37,6 @@ export class TokenInterceptor implements HttpInterceptor {
     // }
 
     if (skipAuthEndpoints.some((endpoint) => req.url.includes(endpoint))) {
-      console.log('Request to token or public endpoints, skipping interceptor.');
       return next.handle(req);
     }
 
@@ -65,16 +62,14 @@ export class TokenInterceptor implements HttpInterceptor {
             const token =
               x.getValue?.() ||
               x.getPayload()?.access_token ||
-              localStorage.getItem('token') ||
+              sessionStorage.getItem('token') || // C6: sessionStorage over localStorage
               undefined;
             let newHeaders = req.headers;
             // console.log("entro " + token);
             if (token && !req.url.includes('/IdraPortal-ngx-Translations')) {
               newHeaders = newHeaders.set('Authorization', `Bearer ${token}`);
-              console.log('Adding Authorization header.');
             }
             const authReq = req.clone({ headers: newHeaders });
-            console.log('Final request headers:', authReq.headers);
             return next.handle(authReq);
           })
         );

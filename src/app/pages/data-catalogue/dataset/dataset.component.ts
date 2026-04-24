@@ -16,7 +16,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { MarkdownModule } from 'ngx-markdown';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { MetadataLocalizationService } from '../services/metadata-localization.service';
 
 @Component({
@@ -55,6 +56,7 @@ export class DatasetComponent implements OnInit, OnDestroy {
 
   samedomain=false;
   private languageSubscription?: Subscription;
+  private destroy$ = new Subject<void>();
   private selectedLanguage = 'en';
 
   constructor(
@@ -74,6 +76,8 @@ export class DatasetComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.languageSubscription?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 
@@ -88,7 +92,7 @@ export class DatasetComponent implements OnInit, OnDestroy {
       this.applyLocalizedMetadata();
     });
 
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.id = params.get('id'); 
       if (this.id) {
         this.getDataset();

@@ -20,14 +20,7 @@ export class StatisticsService {
 
   getCatalogueList(): any {
     return new Promise((resolve,reject)=>{
-      this.http.get(`${this.apiEndpoint}/Idra/api/v1/client/cataloguesInfo`, {
-        headers: {
-          'Content-Type':  'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Methods': 'GET',
-        },
-      },)
+      this.http.get(`${this.apiEndpoint}/Idra/api/v1/client/cataloguesInfo`)
       .subscribe({
         next: (data: any) => {
           resolve(data)
@@ -46,14 +39,7 @@ export class StatisticsService {
     getStatistics(startDate,endDate,catalogueIDs): any {
       return new Promise((resolve,reject)=>{
         let catalogueIDsString = catalogueIDs.join(',')
-        this.http.get(`${this.apiEndpoint}/Idra/api/v1/statistics?startDate=${startDate}&endDate=${endDate}&catalogueID=${catalogueIDsString}`, {
-          headers: {
-            'Content-Type':  'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': 'Content-Type',
-            'Access-Control-Allow-Methods': 'GET',
-          },
-        },)
+        this.http.get(`${this.apiEndpoint}/Idra/api/v1/statistics?startDate=${startDate}&endDate=${endDate}&catalogueID=${catalogueIDsString}`)
         .subscribe({
             next: (data: any) => {
             resolve(data)

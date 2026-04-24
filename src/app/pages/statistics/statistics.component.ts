@@ -74,6 +74,7 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   dataThemes: EChartsOption;
   dataFormats: EChartsOption;
   dataLicenses: EChartsOption;
+  mostActiveHasValues = true;
   coolTheme = CoolTheme;
 
   catalogueList: Array<any> = [];
@@ -124,43 +125,51 @@ export class StatisticsComponent implements OnInit, OnDestroy {
     // Create a token to ensure only the latest request updates the view
     const token = ++this.latestRequestToken;
     
-    this.statisticsService.getStatistics(startDate, endDate, slcCatalogues ).then((data)=>{
+    this.statisticsService.getStatistics(startDate, endDate, slcCatalogues ).then((data: any)=>{
       // Ignore out-of-order responses
       if (token !== this.latestRequestToken) {
         return;
       }
+      const asArray = (value: any): any[] => Array.isArray(value) ? value : [];
+      const catalogueStats = data?.cataloguesStatistics ?? {};
+      const facetStats = data?.facetsStatistics ?? {};
+
       let dataTop10 = { dataset: { source: [['Datasets', 'Datasets'] ] } };
-      (data.cataloguesStatistics.datasetCountStatistics).forEach((element, index) => {
+      asArray(catalogueStats.datasetCountStatistics).forEach((element) => {
         dataTop10.dataset.source.push([element.name, element.datasetCount]);
       });
       this.dataTop10 = dataTop10;
 
       let dataMostActive = {dataset: {source: [['Datasets', 'New Datasets', 'Updated Datasets'] ] } };
-      (data.cataloguesStatistics.datasetUpdatedStat).forEach((element, index) => {
+      this.mostActiveHasValues = false;
+      asArray(catalogueStats.datasetUpdatedStat).forEach((element) => {
+        if ((element.added ?? 0) > 0 || (element.updated ?? 0) > 0) {
+          this.mostActiveHasValues = true;
+        }
         dataMostActive.dataset.source.push([element.name, element.added, element.updated]);
       });
       this.dataMostActive = dataMostActive;
 
       let dataTechnologies = { dataset: { source: [ ['Technologies', 'Technologies'] ] } };
-      (data.cataloguesStatistics.technologiesStat).forEach((element, index) => {
+      asArray(catalogueStats.technologiesStat).forEach((element) => {
         dataTechnologies.dataset.source.push([element.type, element.count]);
       });
       this.dataTechnologies = dataTechnologies;
 
       let dataThemes = { dataset: { source: [ ['Themes', 'Themes'] ] } };
-      (data.facetsStatistics.themesStatistics).forEach((element, index) => {
+      asArray(facetStats.themesStatistics).forEach((element) => {
         dataThemes.dataset.source.push([element.theme, element.cnt]);
       });
       this.dataThemes = dataThemes;
 
       let dataFormats = { dataset: { source: [ ['Formats', 'Formats'] ] } };
-      (data.facetsStatistics.formatsStatistics).forEach((element, index) => {
+      asArray(facetStats.formatsStatistics).forEach((element) => {
         dataFormats.dataset.source.push([element.format, element.cnt]);
       });
       this.dataFormats = dataFormats;
 
       let dataLicenses = { dataset: { source: [ ['Licenses', 'Licenses'] ] } };
-      (data.facetsStatistics.licensesStatistics).forEach((element, index) => {
+      asArray(facetStats.licensesStatistics).forEach((element) => {
         dataLicenses.dataset.source.push([element.license, element.cnt]);
       });
       this.dataLicenses = dataLicenses;

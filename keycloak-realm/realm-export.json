@@ -1,7 +1,7 @@
 {
-  "id": "urbanite",
-  "realm": "urbanite",
-  "displayName": "Urbanite",
+  "id": "data-platform",
+  "realm": "smartera",
+  "displayName": "smartera",
   "notBefore": 0,
   "revokeRefreshToken": false,
   "refreshTokenMaxReuse": 0,
@@ -48,7 +48,7 @@
         "name": "IDRA_USER",
         "composite": false,
         "clientRole": false,
-        "containerId": "urbanite",
+        "containerId": "smartera",
         "attributes": {}
       },
       {
@@ -57,7 +57,7 @@
         "description": "${role_offline-access}",
         "composite": false,
         "clientRole": false,
-        "containerId": "urbanite",
+        "containerId": "smartera",
         "attributes": {}
       },
       {
@@ -65,7 +65,7 @@
         "name": "IDRA_EDITOR",
         "composite": false,
         "clientRole": false,
-        "containerId": "urbanite",
+        "containerId": "smartera",
         "attributes": {}
       },
       {
@@ -73,7 +73,7 @@
         "name": "IDRA_ADMIN",
         "composite": false,
         "clientRole": false,
-        "containerId": "urbanite",
+        "containerId": "smartera",
         "attributes": {}
       },
       {
@@ -82,7 +82,7 @@
         "description": "${role_uma_authorization}",
         "composite": false,
         "clientRole": false,
-        "containerId": "urbanite",
+        "containerId": "smartera",
         "attributes": {}
       }
     ],
@@ -333,7 +333,7 @@
           "attributes": {}
         }
       ],
-      "urbanite": [],
+      "smartera": [],
       "account": [
         {
           "id": "2b9a7f13-3c0d-4afc-b841-50ce311a5b1b",
@@ -481,7 +481,7 @@
       "clientId": "account",
       "name": "${client_account}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/urbanite/account/",
+      "baseUrl": "/realms/smartera/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
@@ -492,7 +492,7 @@
         "manage-account"
       ],
       "redirectUris": [
-        "/realms/urbanite/account/*"
+        "/realms/smartera/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
@@ -528,14 +528,14 @@
       "clientId": "account-console",
       "name": "${client_account-console}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/urbanite/account/",
+      "baseUrl": "/realms/smartera/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "/realms/urbanite/account/*"
+        "/realms/smartera/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
@@ -762,14 +762,14 @@
       "clientId": "security-admin-console",
       "name": "${client_security-admin-console}",
       "rootUrl": "${authAdminUrl}",
-      "baseUrl": "/admin/urbanite/console/",
+      "baseUrl": "/admin/smartera/console/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "/admin/urbanite/console/*"
+        "/admin/smartera/console/*"
       ],
       "webOrigins": [
         "+"
@@ -823,7 +823,7 @@
     },
     {
       "id": "51e3a2e0-1ccc-4290-a05f-0804740a41c8",
-      "clientId": "urbanite",
+      "clientId": "smartera",
       "rootUrl": "",
       "adminUrl": "",
       "baseUrl": "",
