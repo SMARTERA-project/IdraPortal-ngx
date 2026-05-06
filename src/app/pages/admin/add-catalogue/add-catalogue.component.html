@@ -41,13 +41,23 @@
                 <div class="col-md-6">
                     <nb-card-body class="d-flex flex-column align-items-left justify-content-left">
                         <h6 class="jumbotron-heading">{{ 'COUNTRY' | translate }}</h6>
-                        <nb-select fullWidth status="primary" (selectionChange)="changedCountryHandler($event)" [(ngModel)]="node.country" placeholder="{{ 'COUNTRY' | translate }}">
-                            @for (country of countries; track country.code) {
+                        <input
+                            type="text"
+                            nbInput
+                            fullWidth
+                            status="primary"
+                            [placeholder]="'COUNTRY' | translate"
+                            [(ngModel)]="countrySearchTerm"
+                            [nbAutocomplete]="countryAuto"
+                            (blur)="handleCountryInputBlur()"
+                            autocomplete="off">
+                        <nb-autocomplete #countryAuto (selectedChange)="onCountrySelected($event)">
+                            @for (country of getFilteredCountries(); track country.code) {
                                 <nb-option [value]="country.code">
-                                    {{ country.name }}
+                                    {{ country.name }} ({{ country.code }})
                                 </nb-option>
                             }
-                        </nb-select>
+                        </nb-autocomplete>
                     </nb-card-body>
                 </div>
 

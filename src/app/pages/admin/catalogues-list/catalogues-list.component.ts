@@ -360,7 +360,9 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 		}
 
 		this.refreshIntervalId = setInterval(() => {
-			this.loadCatalogue();
+			if (!this.isOperationInProgress) {
+				this.loadCatalogue();
+			}
 		}, 15000);
 	}
 
@@ -373,9 +375,9 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 
 	CB_enabled: boolean = true;
 	canManageAdministration = false;
+	private isOperationInProgress = false;
+
 	loadCatalogue(){
-		this.data = [];
-		// this.dataSource = this.dataSourceBuilder.create(this.data);
 		this.loading=true
 		if(this.CB_enabled){
 			this.defaultColumns = [ 'Name', 'Country', 'Type', 'Level', 'Status', 'Datasets', 'UpdatePeriod', 'LastUpdate', 'id', 'CB'];
@@ -390,7 +392,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 				this.allColumns = [ this.customColumn, ...this.defaultColumns, this.iconColumn ];
 				this.cataloguesInfos = infos;
 				this.totalCatalogues = this.cataloguesInfos.length;
-				this.data = [];
+				const newData: TreeNode<FSEntry>[] = [];
 
 				for (let i = 0; i < infos.length; i++) {
 					const info = infos[i];
@@ -421,7 +423,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 						const countryCode = info.country ?? 'IT';
 						const countryObj = this.countries.find(c => c.code === countryCode) ?? { name: countryCode };
 
-						this.data.push({
+						newData.push({
 							data: {
 								Name: info.name,
 								Country: countryObj.name,
@@ -465,7 +467,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 						const countryCode = fallback.country ?? 'IT';
 						const countryObj = this.countries.find(c => c.code === countryCode) ?? { name: countryCode };
 
-						this.data.push({
+						newData.push({
 							data: {
 								Name: fallback.name ?? 'Unknown',
 								Country: countryObj.name,
@@ -486,6 +488,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 					}
 				}
 
+				this.data = newData;
 				this.dataSource = this.dataSourceBuilder.create(this.data);
 				this.loading = false;
 			},
@@ -596,11 +599,13 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 
 	disableOnLoading(index : number) {
 		this.data[index].data.Status = "LOADING";
+		this.isOperationInProgress = true;
 	}
 
 	enableOnFinish(index : number) {
 		setTimeout(() => {
 			this.data[index].data.Status = "ONLINE";
+			this.isOperationInProgress = false;
 		}, 1000);
 	}
 
@@ -617,6 +622,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 				this.restApi.deactiveCatalogue(id,true)
 				.finally(() => {
 					setTimeout(() => {
+						this.isOperationInProgress = false;
 						this.loadCatalogue();
 					}, 1000);
 				})
@@ -624,9 +630,12 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 				this.restApi.deactiveCatalogue(id,false)
 				.finally(() => {
 					setTimeout(() => {
+						this.isOperationInProgress = false;
 						this.loadCatalogue();
 					}, 1000);
 				})
+			else
+				this.isOperationInProgress = false;
 			return
 		  });
 	}
@@ -636,6 +645,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 		this.restApi.syncRemoteCatalogue(id)
 		.finally(() => {
 			setTimeout(() => {
+				this.isOperationInProgress = false;
 				this.loadCatalogue();
 			}, 5000);
 		})
@@ -646,6 +656,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 		this.restApi.deleteCatalogue(id)
 		.finally(() => {
 			setTimeout(() => {
+				this.isOperationInProgress = false;
 				this.loadCatalogue();
 			}, 1000);
 		})
@@ -666,6 +677,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 		this.restApi.activeCatalogue(id)
 		.finally(() => {
 			setTimeout(() => {
+				this.isOperationInProgress = false;
 				this.loadCatalogue();
 			}, 1000);
 		})

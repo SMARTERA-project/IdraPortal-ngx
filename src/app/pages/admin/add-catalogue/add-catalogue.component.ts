@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CataloguesServiceService } from '../../services/catalogues-service.service';
 import { DomSanitizer} from '@angular/platform-browser';
-import { NbButtonModule, NbCardModule, NbDialogService, NbIconModule, NbInputModule, NbSelectModule, NbSpinnerModule, NbToastrService, NbTooltipModule } from '@nebular/theme';
+import { NbAutocompleteModule, NbButtonModule, NbCardModule, NbDialogService, NbIconModule, NbInputModule, NbSelectModule, NbSpinnerModule, NbToastrService, NbTooltipModule } from '@nebular/theme';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { EditorDialogComponent } from './dialog/editor-dialog/editor-dialog.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { finalize } from 'rxjs/operators';
 
 export interface Node {
 	id : string ;
@@ -60,7 +61,7 @@ export interface Node {
 
 @Component({
   standalone: true,
-  imports: [NbCardModule, TranslateModule, NbSpinnerModule, NbSelectModule, FormsModule, NbButtonModule, NbInputModule, CommonModule, NbIconModule, NbTooltipModule],
+  imports: [NbCardModule, TranslateModule, NbSpinnerModule, NbSelectModule, NbAutocompleteModule, FormsModule, NbButtonModule, NbInputModule, CommonModule, NbIconModule, NbTooltipModule],
   selector: 'ngx-add-catalogue',
   templateUrl: './add-catalogue.component.html',
   styleUrls: ['./add-catalogue.component.scss']
@@ -326,6 +327,8 @@ export class AddCatalogueComponent implements OnInit {
 		{ code: "AX", code3: "ALA", name: "�land Islands", number: "248" }
 	];
 
+	countrySearchTerm = '';
+
     FEDERATION_LEVEL = "LEVEL_0,LEVEL_1,LEVEL_2,LEVEL_3,LEVEL_4";
 	grades=this.FEDERATION_LEVEL.split(',');
 
@@ -488,10 +491,50 @@ export class AddCatalogueComponent implements OnInit {
 					console.log(data);
 					this.imageUrl = data.image.imageData;
 					this.node = data;
+					this.syncCountrySearchFromCode(this.node.country);
 				});
 			}
 		});		
     }
+
+	public getFilteredCountries() {
+		const term = (this.countrySearchTerm || '').trim().toLowerCase();
+		if (!term) {
+			return this.countries;
+		}
+
+		return this.countries.filter(country =>
+			country.name.toLowerCase().includes(term) ||
+			country.code.toLowerCase().includes(term) ||
+			country.code3.toLowerCase().includes(term)
+		);
+	}
+
+	public onCountrySelected(countryCode: string): void {
+		this.changedCountryHandler(countryCode);
+	}
+
+	public handleCountryInputBlur(): void {
+		const search = (this.countrySearchTerm || '').trim().toLowerCase();
+
+		if (!search) {
+			this.changedCountryHandler('');
+			return;
+		}
+
+		const matchedCountry = this.countries.find(country =>
+			country.code.toLowerCase() === search ||
+			country.code3.toLowerCase() === search ||
+			country.name.toLowerCase() === search
+		);
+
+		if (matchedCountry) {
+			this.changedCountryHandler(matchedCountry.code);
+			return;
+		}
+
+		this.syncCountrySearchFromCode(this.node.country);
+	}
 	public receiveMode($event){
 		this.receivedMode = $event; 
 	}
@@ -515,7 +558,7 @@ export class AddCatalogueComponent implements OnInit {
 	
 	public changedCountryHandler($event){
 		this.node.country = $event;
-		
+		this.syncCountrySearchFromCode($event);
 	}
 	
 	public changedCategoryHandler($event){
@@ -579,6 +622,7 @@ export class AddCatalogueComponent implements OnInit {
 			lastUpdateDate : new Date(),
 			inserted : false
 			};
+			this.countrySearchTerm = '';
 			this.imageUrl = this.node.image.imageData;
 			// document.getElementById('fileName').innerHTML = 'Choose file';
 	}
@@ -792,15 +836,16 @@ export class AddCatalogueComponent implements OnInit {
 				this.node.inserted=false;
 
 				fd.append("node",JSON.stringify(this.node));
-				
-				this.restApi.modODMSNode(fd, params.modifyId).subscribe({
-					next: (infos) => {
-						this.loading = false;
+
+				this.restApi.modODMSNode(fd, params.modifyId).pipe(
+					finalize(() => { this.loading = false; })
+				).subscribe({
+					next: () => {
 						this.router.navigate(['/catalogues']);
 					},
 					error: (err) => {
-						this.loading = false;
-						this.toastrService.danger('Could not update catalogue','Error');
+						const msg = this.extractErrorMessage(err, 'Could not update catalogue. Please check your data and try again.');
+						this.toastrService.danger(msg, 'Error', { duration: 8000 } as any);
 					}
 				})
 
@@ -815,14 +860,15 @@ export class AddCatalogueComponent implements OnInit {
 
 				fd.append("node",JSON.stringify(this.node));
 
-				this.restApi.addODMSNode(fd).subscribe({
-					next: (infos) => {
+				this.restApi.addODMSNode(fd).pipe(
+					finalize(() => { this.loading = false; })
+				).subscribe({
+					next: () => {
 						this.router.navigate(['/catalogues']);
-						this.loading = false;
 					},
 					error: (err) => {
-						this.loading = false;
-						this.toastrService.danger('Could not update catalogue','Error');
+						const msg = this.extractErrorMessage(err, 'Could not add catalogue. Please check your data and try again.');
+						this.toastrService.danger(msg, 'Error', { duration: 8000 } as any);
 					}
 				})
 				
@@ -833,6 +879,16 @@ export class AddCatalogueComponent implements OnInit {
 	validateUrl(url: string): boolean {
 		const reg = /^(http|https):\/\/[^ "]+$/;
 		return reg.test(url);
+	}
+
+	private extractErrorMessage(err: any, fallback: string): string {
+		if (err?.error?.userMessage) return err.error.userMessage;
+		if (err?.error?.detail) return err.error.detail;
+		if (err?.error?.message) return err.error.message;
+		if (err?.status === 400) return 'Invalid catalogue data. Please check all required fields.';
+		if (err?.status === 409) return 'A catalogue with this URL already exists.';
+		if (err?.status === 0) return 'Cannot reach the server. Please check your connection.';
+		return fallback;
 	}
 
 	imageUrl: string = "data:image/png;base64,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";
@@ -879,5 +935,10 @@ export class AddCatalogueComponent implements OnInit {
 
 	updateImage(url : any){
 		this.imageUrl = url;
+	}
+
+	private syncCountrySearchFromCode(countryCode: string): void {
+		const selectedCountry = this.countries.find(country => country.code === countryCode);
+		this.countrySearchTerm = selectedCountry ? `${selectedCountry.name} (${selectedCountry.code})` : '';
 	}
 }
