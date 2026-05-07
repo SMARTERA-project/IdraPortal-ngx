@@ -47,12 +47,13 @@
                             fullWidth
                             status="primary"
                             [placeholder]="'COUNTRY' | translate"
-                            [(ngModel)]="countrySearchTerm"
+                            [(ngModel)]="node.country"
+                            (ngModelChange)="updateFilteredCountries($event)"
                             [nbAutocomplete]="countryAuto"
                             (blur)="handleCountryInputBlur()"
                             autocomplete="off">
-                        <nb-autocomplete #countryAuto (selectedChange)="onCountrySelected($event)">
-                            @for (country of getFilteredCountries(); track country.code) {
+                        <nb-autocomplete #countryAuto [handleDisplayFn]="displayCountryFn.bind(this)">
+                            @for (country of filteredCountries; track country.code) {
                                 <nb-option [value]="country.code">
                                     {{ country.name }} ({{ country.code }})
                                 </nb-option>

@@ -74,6 +74,8 @@ export class AddCatalogueComponent implements OnInit {
 	activeMode = [{text:'Yes',value:true},{text:'No',value:false}];
 	nodeType = [{text:'CKAN',value:'CKAN'},{text:'SOCRATA',value:'SOCRATA'},{text:'NATIVE',value:'NATIVE'},{text:'NGSILD_CB',value:'NGSILD_CB'},{text:'WEB',value:'WEB'},{text:'DCATDUMP',value:'DCATDUMP'},{text:'DKAN',value:'DKAN'},{text:'JUNAR',value:'JUNAR'},{text:'OPENDATASOFT',value:'OPENDATASOFT'},{text:'ORION',value:'ORION'},{text:'SPARQL',value:'SPARQL'},{text:'SPOD',value:'SPOD'},{text:'ZENODO',value:'ZENODO'}];
   
+	filteredCountries: any[] = [];
+
   	countries = [
 		{ code: "AF", code3: "AFG", name: "Afghanistan", number: "004" },
 		{ code: "AL", code3: "ALB", name: "Albania", number: "008" },
@@ -327,8 +329,6 @@ export class AddCatalogueComponent implements OnInit {
 		{ code: "AX", code3: "ALA", name: "�land Islands", number: "248" }
 	];
 
-	countrySearchTerm = '';
-
     FEDERATION_LEVEL = "LEVEL_0,LEVEL_1,LEVEL_2,LEVEL_3,LEVEL_4";
 	grades=this.FEDERATION_LEVEL.split(',');
 
@@ -483,6 +483,7 @@ export class AddCatalogueComponent implements OnInit {
 	}
 
     ngOnInit(): void {
+		this.filteredCountries = this.countries;
 		this.route.queryParams
 			.subscribe(params => {
 			if(params.modifyId != null && params.modifyId != undefined && params.modifyId != ''){
@@ -491,49 +492,48 @@ export class AddCatalogueComponent implements OnInit {
 					console.log(data);
 					this.imageUrl = data.image.imageData;
 					this.node = data;
-					this.syncCountrySearchFromCode(this.node.country);
-				});
+					});
 			}
 		});		
     }
 
-	public getFilteredCountries() {
-		const term = (this.countrySearchTerm || '').trim().toLowerCase();
-		if (!term) {
-			return this.countries;
-		}
+	public displayCountryFn(code: string): string {
+		if (!code) return '';
+		const country = this.countries.find(c => c.code === code);
+		return country ? `${country.name} (${country.code})` : code;
+	}
 
-		return this.countries.filter(country =>
+	public updateFilteredCountries(value: string): void {
+		if (this.countries.some(c => c.code === value)) return;
+		const term = (value || '').trim().toLowerCase();
+		if (!term) {
+			this.filteredCountries = this.countries;
+			return;
+		}
+		this.filteredCountries = this.countries.filter(country =>
 			country.name.toLowerCase().includes(term) ||
 			country.code.toLowerCase().includes(term) ||
 			country.code3.toLowerCase().includes(term)
 		);
 	}
 
-	public onCountrySelected(countryCode: string): void {
-		this.changedCountryHandler(countryCode);
+	public onCountrySelected(_value: string): void {
+		// node.country is already updated by [(ngModel)] binding; no additional action needed
 	}
 
 	public handleCountryInputBlur(): void {
-		const search = (this.countrySearchTerm || '').trim().toLowerCase();
-
-		if (!search) {
-			this.changedCountryHandler('');
-			return;
-		}
-
-		const matchedCountry = this.countries.find(country =>
-			country.code.toLowerCase() === search ||
-			country.code3.toLowerCase() === search ||
-			country.name.toLowerCase() === search
-		);
-
-		if (matchedCountry) {
-			this.changedCountryHandler(matchedCountry.code);
-			return;
-		}
-
-		this.syncCountrySearchFromCode(this.node.country);
+		setTimeout(() => {
+			const value = this.node.country || '';
+			if (!value) return;
+			if (this.countries.some(c => c.code === value)) return;
+			const term = value.trim().toLowerCase();
+			const matched = this.countries.find(c =>
+				c.code.toLowerCase() === term ||
+				c.code3.toLowerCase() === term ||
+				c.name.toLowerCase() === term
+			);
+			this.node.country = matched ? matched.code : '';
+		}, 200);
 	}
 	public receiveMode($event){
 		this.receivedMode = $event; 
@@ -558,7 +558,6 @@ export class AddCatalogueComponent implements OnInit {
 	
 	public changedCountryHandler($event){
 		this.node.country = $event;
-		this.syncCountrySearchFromCode($event);
 	}
 	
 	public changedCategoryHandler($event){
@@ -622,7 +621,6 @@ export class AddCatalogueComponent implements OnInit {
 			lastUpdateDate : new Date(),
 			inserted : false
 			};
-			this.countrySearchTerm = '';
 			this.imageUrl = this.node.image.imageData;
 			// document.getElementById('fileName').innerHTML = 'Choose file';
 	}
@@ -937,8 +935,4 @@ export class AddCatalogueComponent implements OnInit {
 		this.imageUrl = url;
 	}
 
-	private syncCountrySearchFromCode(countryCode: string): void {
-		const selectedCountry = this.countries.find(country => country.code === countryCode);
-		this.countrySearchTerm = selectedCountry ? `${selectedCountry.name} (${selectedCountry.code})` : '';
-	}
 }

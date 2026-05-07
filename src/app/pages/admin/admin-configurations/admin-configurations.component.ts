@@ -2,13 +2,13 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CataloguesServiceService } from '../../services/catalogues-service.service';
-import { NbAccordionModule, NbButtonModule, NbCheckboxModule, NbDialogService, NbIconModule, NbInputModule, NbSortDirection, NbSortRequest, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule } from '@nebular/theme';
+import { NbAccordionModule, NbButtonModule, NbCheckboxModule, NbDialogService, NbIconModule, NbInputModule, NbSortDirection, NbSortRequest, NbToastrService, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule } from '@nebular/theme';
 import { Md5 } from 'ts-md5';
 import { PrefixDialogComponent } from './dialog/prefix-dialog/prefix-dialog.component';
 import { RemoteCatalogueDialogComponent } from './dialog/remoteCatalogue-dialog/remoteCatalogue-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
-import { NbCardModule, NbSelectModule } from '@nebular/theme';
+import { NbCardModule, NbSelectModule, NbToastrModule } from '@nebular/theme';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { OidcUserInformationService } from '../../auth/services/oidc-user-information.service';
@@ -42,7 +42,7 @@ interface FSEntryCat {
 
 @Component({
   standalone: true,
-  imports: [NbCardModule, TranslateModule, FormsModule, NbSelectModule, NbAccordionModule, NbTreeGridModule, NbCheckboxModule, NbButtonModule, NbAccordionModule, CommonModule, NbInputModule, NbIconModule],
+  imports: [NbCardModule, TranslateModule, FormsModule, NbSelectModule, NbAccordionModule, NbTreeGridModule, NbCheckboxModule, NbButtonModule, NbAccordionModule, CommonModule, NbInputModule, NbIconModule, NbToastrModule],
   selector: 'ngx-admin-configurations',
   templateUrl: './admin-configurations.component.html',
   styleUrls: ['./admin-configurations.component.scss']
@@ -58,7 +58,8 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
     private restApi: CataloguesServiceService,
     public translation: TranslateService,
     private dialogService: NbDialogService,
-    private oidcUserInformationService: OidcUserInformationService) { }
+    private oidcUserInformationService: OidcUserInformationService,
+    private toastrService: NbToastrService) { }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -107,12 +108,6 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
       this.rdfControls = (data.rdf_undefined_content_length == 'true');
       this.rdfMaxSize = (data.rdf_undefined_dimension == 'true');
       this.rdfMaxNumber = data.rdf_max_dimension;
-      this.contextBrokerUrl = data.orionUrl;
-      if (data.orionUrl == '') {
-        this.contextBrokerFederation = false;
-      } else {
-        this.contextBrokerFederation = true;
-      }
     });
     this.listPrefixes();
     this.listRemoteCatalogues();
@@ -144,8 +139,6 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
   rdfControls: boolean = false;
   rdfMaxSize: boolean = false;
   rdfMaxNumber: number = 0;
-  contextBrokerFederation: boolean = false;
-  contextBrokerUrl: string = '';
   canManageAdministration = false;
 
   handleClickCatalogues() {
@@ -153,15 +146,22 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
       "refresh_period": this.refreshPeriod,
       "rdf_undefined_content_length": String(this.rdfControls),
       "rdf_undefined_dimension": String(this.rdfMaxSize),
-      "rdf_max_dimension": this.rdfMaxNumber.toString(),
-      "orionUrl": this.contextBrokerUrl
+      "rdf_max_dimension": this.rdfMaxNumber.toString()
     };
-    this.restApi.updateConfiguration(json).subscribe();
-  }
-
-  handleContextBrokerFederation() {
-    if (this.contextBrokerFederation == false)
-      this.contextBrokerUrl = ''
+    this.restApi.updateConfiguration(json).subscribe({
+      next: () => {
+        this.toastrService.success(
+          this.translation.instant('CONFIGURATION_SAVED'),
+          this.translation.instant('TOAST_SUCCESS')
+        );
+      },
+      error: () => {
+        this.toastrService.danger(
+          this.translation.instant('CONFIGURATION_SAVE_ERROR'),
+          this.translation.instant('TOAST_ERROR')
+        );
+      }
+    });
   }
 
   handleSparqlPrefixOpenModal() {

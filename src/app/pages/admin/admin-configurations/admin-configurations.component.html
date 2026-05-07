@@ -118,28 +118,6 @@
         </nb-accordion-item-body>
       </nb-accordion-item>
       
-      <nb-accordion-item>
-        <nb-accordion-item-header>{{ 'ADMIN_CONTEXT_BROKER_HEADER' | translate }}</nb-accordion-item-header>
-        <nb-accordion-item-body>
-          <div class="row show-grid">
-            <div class="col-md-12">
-              <nb-card class="minicard">
-                <nb-card-body class="d-flex flex-column align-items-left justify-content-left">
-                  <div class="d-flex align-content-center">
-                    <h6 class="jumbotron-heading align-self-center">{{ 'ADMIN_CONTEXT_BROKER_ENABLE' | translate }}</h6>
-                    <nb-checkbox class="align-self-center ml-1" status="primary" [checked]="contextBrokerFederation" [(ngModel)]="contextBrokerFederation" (checkedChange)="handleContextBrokerFederation()" [disabled]="!canManageAdministration"></nb-checkbox>
-                  </div>
-                  @if (contextBrokerFederation == true) {<h6 class="jumbotron-heading">{{ 'ADMIN_CONTEXT_BROKER_URL' | translate }}</h6>}
-                  @if (contextBrokerFederation == true) {<input type="text" nbInput status="primary" fullWidth placeholder="{{ 'ADMIN_CONTEXT_BROKER_URL_PLACEHOLDER' | translate }}" [(ngModel)]="contextBrokerUrl" [disabled]="!canManageAdministration">}
-                </nb-card-body>
-              </nb-card>
-            </div>
-            @if (canManageAdministration) {<div class="col-md-2">
-              <button nbButton hero status="primary" class="mt-2 btn-full-width" (click)="handleClickCatalogues()">{{ 'APPLY' | translate }}</button>
-            </div>}
-          </div>
-        </nb-accordion-item-body>
-      </nb-accordion-item>
     </nb-accordion>
   </div>
 </div>
