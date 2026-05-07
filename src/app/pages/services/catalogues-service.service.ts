@@ -91,6 +91,10 @@ export class CataloguesServiceService {
    getAllRemCat():Observable<any>{
     return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue`);
   }
+
+  checkRemoteCatalogueHealth(url: string): Observable<any> {
+    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue/health?url=${encodeURIComponent(url)}`);
+  }
 	//getRemoteNodes
   getRemoteNodesJson():Observable<any>{
     return this.http.get<any>(`${this.apiEndpoint}/catalogue.json`);

@@ -107,3 +107,21 @@ nb-icon {
 .minicard {
   margin-bottom: 20px;
 }
+
+/* Badge stato catalogo remoto */
+.col-w-100 {
+  width: 100px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+
+  &.status-online  { background: #00b887; color: #fff; }
+  &.status-offline { background: #ff3d71; color: #fff; }
+  &.status-unknown { background: #ffaa00; color: #fff; }
+}

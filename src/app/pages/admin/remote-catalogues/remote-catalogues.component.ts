@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NbActionsModule, NbButtonModule, NbCardModule, NbInputModule, NbSelectModule, NbSortDirection, NbSortRequest, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule } from '@nebular/theme';
+import { NbActionsModule, NbButtonModule, NbCardModule, NbInputModule, NbSelectModule, NbSortDirection, NbSortRequest, NbSpinnerModule, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule } from '@nebular/theme';
 import { CataloguesServiceService } from '../../services/catalogues-service.service';
 import { ODMSCatalogueInfo } from '../../data-catalogue/model/odmscatalogue-info';
 import { ODMSCatalogue } from '../../data-catalogue/model/odmscatalogue';
@@ -29,7 +29,7 @@ interface FSEntry {
 
 @Component({
 	standalone: true,
-	imports: [NbCardModule, TranslateModule, NbTreeGridModule, NbSelectModule, NbInputModule, RouterModule, NbActionsModule, NbButtonModule],
+	imports: [NbCardModule, TranslateModule, NbTreeGridModule, NbSelectModule, NbInputModule, RouterModule, NbActionsModule, NbButtonModule, NbSpinnerModule],
 	selector: 'ngx-remote-catalogues',
 	templateUrl: './remote-catalogues.component.html',
 	styleUrls: ['./remote-catalogues.component.scss']
@@ -39,6 +39,8 @@ export class RemoteCataloguesComponent implements OnInit {
 	cataloguesInfos: Array<ODMSCatalogueInfo>=[]
 	loading=false;
 	id=0;
+	healthStatuses: { [key: string]: string } = {};
+	healthCheckLoading = false;
 
 	totalCatalogues;
 	cataloguesMoreInfos: ODMSCatalogue
@@ -115,13 +117,36 @@ export class RemoteCataloguesComponent implements OnInit {
 				
 				//costrutisco la tabella
 				this.dataSource = this.dataSourceBuilder.create(this.data);
-				
+
 				}
+			this.checkAllHealth();
 			},
 			error: (err) =>{
 				console.log(err);
 			}
 		});
+	}
+
+	checkAllHealth(): void {
+		if (!this.allRemCatJson || this.allRemCatJson.length === 0) { return; }
+		this.healthCheckLoading = true;
+		let pending = this.allRemCatJson.length;
+		this.allRemCatJson.forEach((cat: any) => {
+			this.restApi.checkRemoteCatalogueHealth(cat.host).subscribe({
+				next: (result) => {
+					this.healthStatuses[cat.host] = result?.status || 'UNKNOWN';
+					if (--pending === 0) { this.healthCheckLoading = false; }
+				},
+				error: () => {
+					this.healthStatuses[cat.host] = 'OFFLINE';
+					if (--pending === 0) { this.healthCheckLoading = false; }
+				}
+			});
+		});
+	}
+
+	getHealthStatus(host: string): string {
+		return this.healthStatuses[host] || 'UNKNOWN';
 	}
 
 getLevel(nodeType: string): string {
@@ -158,7 +183,7 @@ getLevel(nodeType: string): string {
 
   // ------------------------- TABLE
   iconColumn = 'Actions';
-  defaultColumns = [ 'Name', 'Country', 'Type', 'Level', 'Host', 'Actions'];
+  defaultColumns = [ 'Name', 'Country', 'Type', 'Level', 'Host', 'Status', 'Actions'];
   allColumns = [ ...this.defaultColumns ];
 
   dataSource: NbTreeGridDataSource<FSEntry>;

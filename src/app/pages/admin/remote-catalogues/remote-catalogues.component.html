@@ -14,11 +14,14 @@
             <label class="search-label" for="search">{{ 'SEARCH' | translate }}:</label>
             <input nbInput [nbFilterInput]="dataSource" id="search" class="search-input">
           </div>
-          <div class="col-sm-8 col-md-5 col-lg-4 offset-lg-2 offset-md-0 offset-sm-0 d-flex align-items-center gap-1">
+          <div class="col-sm-8 col-md-4 col-lg-3 offset-lg-1 offset-md-0 offset-sm-0 d-flex align-items-center gap-1">
             <label class="search-label">{{ 'REMOTE_CATALOGUE_ADMIN_REMOTE_CATALOGUE_LABEL' | translate }}</label>
             <nb-select placeholder="{{ 'REMOTE_CATALOGUE_ADMIN_JSON_CATALOGUE_PLACEHOLDER' | translate }}">
               @for (cat of allRemCat; track cat.catalogueName) {<nb-option [value]="cat.catalogueName">{{ cat.catalogueName }}</nb-option>}
             </nb-select>
+          </div>
+          <div class="col-sm-2 col-md-2 col-lg-2 d-flex align-items-center gap-1">
+            <button nbButton status="basic" size="small" (click)="checkAllHealth()" [nbSpinner]="healthCheckLoading">Check Status</button>
           </div>
           <div class="col-sm-2 col-md-1 col-lg-1 ">
             <button routerLink="../" nbButton outline status="success">{{ 'REMOTE_CATALOGUE_ADMIN_BACK_BUTTON' | translate }}</button>
@@ -58,6 +61,18 @@
             <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data[defaultColumns[4]] }}</td>
           </ng-container>
   
+          <ng-container [nbTreeGridColumnDef]="defaultColumns[5]">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef class="col-w-100">Status</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row">
+              <span class="status-badge"
+                    [class.status-online]="getHealthStatus(row.data.Host) === 'ONLINE'"
+                    [class.status-offline]="getHealthStatus(row.data.Host) === 'OFFLINE'"
+                    [class.status-unknown]="getHealthStatus(row.data.Host) === 'UNKNOWN'">
+                {{ getHealthStatus(row.data.Host) }}
+              </span>
+            </td>
+          </ng-container>
+
           <ng-container [nbTreeGridColumnDef]="iconColumn">
             <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef class="col-w-120">{{ 'ACTIONS' | translate }}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row">
