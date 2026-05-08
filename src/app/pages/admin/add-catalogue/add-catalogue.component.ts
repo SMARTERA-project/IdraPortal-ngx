@@ -492,6 +492,7 @@ export class AddCatalogueComponent implements OnInit {
 					console.log(data);
 					this.imageUrl = data.image.imageData;
 					this.node = data;
+					this.node.refreshPeriod = String(this.node.refreshPeriod);
 					});
 			}
 		});		
@@ -504,7 +505,6 @@ export class AddCatalogueComponent implements OnInit {
 	}
 
 	public updateFilteredCountries(value: string): void {
-		if (this.countries.some(c => c.code === value)) return;
 		const term = (value || '').trim().toLowerCase();
 		if (!term) {
 			this.filteredCountries = this.countries;
@@ -517,8 +517,10 @@ export class AddCatalogueComponent implements OnInit {
 		);
 	}
 
-	public onCountrySelected(_value: string): void {
-		// node.country is already updated by [(ngModel)] binding; no additional action needed
+	public onCountryFocus(): void {
+		if (this.filteredCountries !== this.countries) {
+			this.filteredCountries = this.countries;
+		}
 	}
 
 	public handleCountryInputBlur(): void {
