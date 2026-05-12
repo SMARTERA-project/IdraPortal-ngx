@@ -198,12 +198,8 @@ export class CataloguesServiceService {
   }
   
   async submitAnalisysJSON(id: String): Promise<any> {
-    
-    const token = localStorage.getItem('token');
-
     let json = {
-      "file_url": `${this.mqaDockerEndpoint}/Idra/api/v1/administration/dcat-ap/dump/`+id,  //da cambiare
-      "token": token
+      "file_url": `${this.mqaDockerEndpoint}/Idra/api/v1/client/dcat-ap/dump/`+id,
     }
     return new Promise((resolve,reject)=>{
       this.http.post(`${this.mqaEndpoint}/submit/auth`, json, {
