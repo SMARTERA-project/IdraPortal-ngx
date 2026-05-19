@@ -59,6 +59,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 	totalCatalogues;
 	private refreshIntervalId: ReturnType<typeof setInterval> | null = null;
 	private destroy$ = new Subject<void>();
+	private pendingIds = new Set<string>();
 
 	cataloguesMoreInfos: ODMSCatalogue
 	data: TreeNode<FSEntry>[] = [];
@@ -360,9 +361,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 		}
 
 		this.refreshIntervalId = setInterval(() => {
-			if (!this.isOperationInProgress) {
-				this.loadCatalogue();
-			}
+			this.loadCatalogue();
 		}, 15000);
 	}
 
@@ -375,7 +374,6 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 
 	CB_enabled: boolean = true;
 	canManageAdministration = false;
-	private isOperationInProgress = false;
 
 	loadCatalogue(){
 		this.loading=true
@@ -391,8 +389,8 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 			next: (infos) => {
 				this.allColumns = [ this.customColumn, ...this.defaultColumns, this.iconColumn ];
 				this.cataloguesInfos = infos;
-				this.totalCatalogues = this.cataloguesInfos.length;
 				const newData: TreeNode<FSEntry>[] = [];
+				const serverIds = new Set<string>();
 
 				for (let i = 0; i < infos.length; i++) {
 					const info = infos[i];
@@ -422,6 +420,8 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 
 						const countryCode = info.country ?? 'IT';
 						const countryObj = this.countries.find(c => c.code === countryCode) ?? { name: countryCode };
+						const isPending = this.pendingIds.has(info.id);
+						const prev = this.data.find(d => d.data.id === info.id);
 
 						newData.push({
 							data: {
@@ -429,18 +429,19 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 								Country: countryObj.name,
 								Type: info.nodeType,
 								Level: level,
-								Status: info.nodeState,
+								Status: isPending ? 'LOADING' : info.nodeState,
 								CB: info.isFederatedInCb,
 								Datasets: info.datasetCount,
 								UpdatePeriod: refreshPeriod,
 								LastUpdate: formatDate(info.lastUpdateDate, 'yyyy-MM-dd HH:mm:ss', 'en-US'),
 								id: info.id,
 								index: i,
-								Active: info.isActive,
+								Active: isPending && prev ? prev.data.Active : info.isActive,
 								synchLock: info.synchLock,
 								catalogueUrl: info.homepage
 							}
 						});
+						serverIds.add(info.id);
 					} catch (error) {
 						// fallback: ensure minimal sane values and continue
 						const fallback = infos[i];
@@ -466,6 +467,8 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 						}
 						const countryCode = fallback.country ?? 'IT';
 						const countryObj = this.countries.find(c => c.code === countryCode) ?? { name: countryCode };
+						const isPending = this.pendingIds.has(fallback.id ?? '');
+						const prev = this.data.find(d => d.data.id === (fallback.id ?? ''));
 
 						newData.push({
 							data: {
@@ -473,22 +476,35 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 								Country: countryObj.name,
 								Type: fallback.nodeType ?? 'UNKNOWN',
 								Level: level,
-								Status: fallback.nodeState ?? 'UNKNOWN',
+								Status: isPending ? 'LOADING' : (fallback.nodeState ?? 'UNKNOWN'),
 								CB: fallback.isFederatedInCb ?? false,
 								Datasets: fallback.datasetCount ?? 0,
 								UpdatePeriod: refreshPeriod,
 								LastUpdate: formatDate(fallback.lastUpdateDate ?? new Date(), 'yyyy-MM-dd HH:mm:ss', 'en-US'),
 								id: fallback.id ?? '',
 								index: i,
-								Active: fallback.isActive ?? false,
+								Active: isPending && prev ? prev.data.Active : (fallback.isActive ?? false),
 								synchLock: fallback.synchLock ?? '',
 								catalogueUrl: fallback.homepage ?? ''
 							}
+						});
+						if (fallback.id) serverIds.add(fallback.id);
+					}
+				}
+
+				// Preserve rows that are pending but transiently missing from the server response
+				// (e.g. mid-deactivate the catalogue may briefly drop from the list).
+				for (const prev of this.data) {
+					const prevId = prev.data.id;
+					if (prevId && this.pendingIds.has(prevId) && !serverIds.has(prevId)) {
+						newData.push({
+							data: { ...prev.data, Status: 'LOADING', index: newData.length }
 						});
 					}
 				}
 
 				this.data = newData;
+				this.totalCatalogues = this.data.length;
 				this.dataSource = this.dataSourceBuilder.create(this.data);
 				this.loading = false;
 			},
@@ -597,16 +613,29 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 	};
   //-------------------------------------------------------------
 
-	disableOnLoading(index : number) {
-		this.data[index].data.Status = "LOADING";
-		this.isOperationInProgress = true;
+	private markPending(id: string): void {
+		if (!id) return;
+		this.pendingIds.add(id);
+		const row = this.data.find(d => d.data.id === id);
+		if (row) {
+			row.data.Status = "LOADING";
+		}
 	}
 
-	enableOnFinish(index : number) {
+	private clearPending(id: string): void {
+		if (!id) return;
+		this.pendingIds.delete(id);
+	}
+
+	isRowPending(id: string): boolean {
+		return !!id && this.pendingIds.has(id);
+	}
+
+	private finishAction(id: string, delayMs: number = 1000): void {
 		setTimeout(() => {
-			this.data[index].data.Status = "ONLINE";
-			this.isOperationInProgress = false;
-		}, 1000);
+			this.clearPending(id);
+			this.loadCatalogue();
+		}, delayMs);
 	}
 
 	private hasDeferredFirstDeactivateDialog = false;
@@ -620,51 +649,37 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 		  }).onClose.subscribe(res => {
 			if(res == 1)
 				this.restApi.deactiveCatalogue(id,true)
-				.finally(() => {
-					setTimeout(() => {
-						this.isOperationInProgress = false;
-						this.loadCatalogue();
-					}, 1000);
-				})
+				.finally(() => this.finishAction(id, 1000));
 			else if(res == 0)
 				this.restApi.deactiveCatalogue(id,false)
-				.finally(() => {
-					setTimeout(() => {
-						this.isOperationInProgress = false;
-						this.loadCatalogue();
-					}, 1000);
-				})
-			else
-				this.isOperationInProgress = false;
+				.finally(() => this.finishAction(id, 1000));
+			else {
+				// User cancelled: restore row state from server immediately.
+				this.clearPending(id);
+				this.loadCatalogue();
+			}
 			return
 		  });
 	}
 
 	syncCatalogue(id : string, index : number){
-		this.disableOnLoading(index);
+		if (this.isRowPending(id)) return;
+		this.markPending(id);
 		this.restApi.syncRemoteCatalogue(id)
-		.finally(() => {
-			setTimeout(() => {
-				this.isOperationInProgress = false;
-				this.loadCatalogue();
-			}, 5000);
-		})
+		.finally(() => this.finishAction(id, 5000));
 	}
 
 	deleteCatalogue(id : string, index : number){
-		this.disableOnLoading(index);
+		if (this.isRowPending(id)) return;
+		this.markPending(id);
 		this.restApi.deleteCatalogue(id)
-		.finally(() => {
-			setTimeout(() => {
-				this.isOperationInProgress = false;
-				this.loadCatalogue();
-			}, 1000);
-		})
+		.finally(() => this.finishAction(id, 1000));
 	}
 
 	activeCatalogue(id : string, index : number, active: boolean){
+		if (this.isRowPending(id)) return;
 		if(active){
-			this.disableOnLoading(index);
+			this.markPending(id);
 			if (!this.hasDeferredFirstDeactivateDialog) {
 				this.hasDeferredFirstDeactivateDialog = true;
 				setTimeout(() => this.openDeactivateCatalogueDialog(id), 0);
@@ -673,23 +688,16 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 			}
 			return
 		}
-		this.disableOnLoading(index);
+		this.markPending(id);
 		this.restApi.activeCatalogue(id)
-		.finally(() => {
-			setTimeout(() => {
-				this.isOperationInProgress = false;
-				this.loadCatalogue();
-			}, 1000);
-		})
+		.finally(() => this.finishAction(id, 1000));
 	}
 
-	async sendMqaAnalisysCatalogue(id : String, index) : Promise<void>{
-		this.disableOnLoading(index);
-		
+	async sendMqaAnalisysCatalogue(id : string, index) : Promise<void>{
+		if (this.isRowPending(id)) return;
+		this.markPending(id);
 		await this.restApi.submitAnalisysJSON(id)
-		.finally(() => {
-				this.enableOnFinish(index);
-		})
+		.finally(() => this.finishAction(id, 1000));
 	}
 
 	modifyCatalogue(id : string){

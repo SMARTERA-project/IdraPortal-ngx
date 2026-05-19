@@ -335,7 +335,7 @@ export class AddCatalogueComponent implements OnInit {
     public publisher: string;
 		
 	public back() {
-		this.router.navigate(['']);
+		this.router.navigate(['/administration/adminCatalogues']);
 	}
 	
 	node = {
@@ -841,7 +841,7 @@ export class AddCatalogueComponent implements OnInit {
 					finalize(() => { this.loading = false; })
 				).subscribe({
 					next: () => {
-						this.router.navigate(['/catalogues']);
+						this.router.navigate(['/administration/adminCatalogues']);
 					},
 					error: (err) => {
 						const msg = this.extractErrorMessage(err, 'Could not update catalogue. Please check your data and try again.');
@@ -864,7 +864,7 @@ export class AddCatalogueComponent implements OnInit {
 					finalize(() => { this.loading = false; })
 				).subscribe({
 					next: () => {
-						this.router.navigate(['/catalogues']);
+						this.router.navigate(['/administration/adminCatalogues']);
 					},
 					error: (err) => {
 						const msg = this.extractErrorMessage(err, 'Could not add catalogue. Please check your data and try again.');
