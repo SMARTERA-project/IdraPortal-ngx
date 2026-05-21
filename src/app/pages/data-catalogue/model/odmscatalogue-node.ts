@@ -24,6 +24,11 @@ export class ODMSCatalogueNode {
     location:string;
     locationDescription:string;
     dcatProfile:string;
+    /**
+     * Read-only DCAT-AP version label ("DCAT_AP_2" / "DCAT_AP_3") auto-detected by
+     * the backend at sync time. NEVER selected by the user.
+     */
+    dcatVersion?: string;
     image:{
         imageData:string;
     };
