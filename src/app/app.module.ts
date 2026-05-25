@@ -43,7 +43,7 @@ class GenericConfig<T> {
   constructor(public config: T) {}
 }
 
-const URL = 'https://raw.githubusercontent.com/BeOpen-project/IdraPortal-ngx-Translations';
+const URL = 'https://raw.githubusercontent.com/OPSILab/IdraPortal-ngx-Translations';
 const DEFAULT_AUTH_PROFILE = 'oidc';
 const DEFAULT_CLIENT_ID = 'data-platform';
 const DEFAULT_CLIENT_SECRET = '';
