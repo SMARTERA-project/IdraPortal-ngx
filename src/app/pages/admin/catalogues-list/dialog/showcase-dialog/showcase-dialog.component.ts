@@ -1,8 +1,9 @@
 import { Component, Input } from '@angular/core';
 import { NbButtonModule, NbCardModule, NbDialogRef } from '@nebular/theme';
+import { TranslateModule } from '@ngx-translate/core';
 @Component({
   standalone: true,
-  imports: [NbCardModule, NbButtonModule],
+  imports: [NbCardModule, NbButtonModule, TranslateModule],
   selector: 'ngx-showcase-dialog',
   templateUrl: 'showcase-dialog.component.html',
   styleUrls: ['showcase-dialog.component.scss'],

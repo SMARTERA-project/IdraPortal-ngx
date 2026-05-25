@@ -151,8 +151,8 @@
                 @if (node.nodeType == 'ZENODO') {
                     <div class="col-md-12">
                         <nb-card-body class="d-flex flex-column align-items-left justify-content-left">
-                            <h6 class="jumbotron-heading">Communities:</h6>
-                            <input type="text" nbInput fullWidth status="primary" placeholder="communities" [(ngModel)]="node.communities"
+                            <h6 class="jumbotron-heading">{{ 'ADMIN_CATALOGUE_COMMUNITIES_LABEL' | translate }}</h6>
+                            <input type="text" nbInput fullWidth status="primary" [placeholder]="'ADMIN_CATALOGUE_COMMUNITIES_PLACEHOLDER' | translate" [(ngModel)]="node.communities"
                             [required]="!modifyId ? true : null" [disabled]="modifyId ? true : null">
                         </nb-card-body>
                     </div>

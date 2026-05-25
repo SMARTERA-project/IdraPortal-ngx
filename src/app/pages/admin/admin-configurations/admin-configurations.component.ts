@@ -168,7 +168,7 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
 
     this.dialogService.open(PrefixDialogComponent, {
       context: {
-        title: 'Create new prefix',
+        title: this.translation.instant('DIALOG_CREATE_NEW_PREFIX'),
         action: 'ADD'
       },
     }).onClose.subscribe(res => {
@@ -186,7 +186,7 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
 
   handleSparqlPrefixDelete(id: string) {
 
-    if (confirm("Are you sure you want to delete this element?")) {
+    if (confirm(this.translation.instant('DIALOG_CONFIRM_DELETE_ELEMENT'))) {
       this.restApi.deletePrefix(id).subscribe(() => {
         this.listPrefixes();
       });
@@ -196,7 +196,7 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
   handleSparqlPrefixEdit(id: string, prefix: string, namespace: string) {
     this.dialogService.open(PrefixDialogComponent, {
       context: {
-        title: 'Modify new prefix',
+        title: this.translation.instant('DIALOG_MODIFY_PREFIX'),
         action: 'MODIFY',
         prefix: prefix,
         namespace: namespace
@@ -289,7 +289,7 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
   }
 
   handleRemoteCataloguDelete(id: string) {
-    if (confirm("Are you sure you want to delete this element?")) {
+    if (confirm(this.translation.instant('DIALOG_CONFIRM_DELETE_ELEMENT'))) {
       this.restApi.deleteRemoteCatalogue(id).subscribe(() => {
         this.listRemoteCatalogues();
       });

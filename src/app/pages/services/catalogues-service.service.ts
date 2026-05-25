@@ -19,6 +19,7 @@ import { ODMSCatalogueNode } from '../data-catalogue/model/odmscatalogue-node';
 import { ConfigurationManagement } from '../data-catalogue/model/configurations';
 import { Prefixes } from '../data-catalogue/model/prefixes';
 import { RemoteCatalogues } from '../data-catalogue/model/remote-catalogues';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +31,8 @@ export class CataloguesServiceService {
   private mqaDockerEndpoint;
 
   constructor(private config:ConfigService<Record<string, any>> ,private http:HttpClient,
-    private toastr: NbToastrService) { 
+    private toastr: NbToastrService,
+    private translateService: TranslateService) {
       this.apiEndpoint=this.config.config["idra_base_url"];
       this.mqaEndpoint=this.config.config["mqa_base_url"];
       this.mqaDockerEndpoint=this.config.config["idra_docker_url"];
@@ -214,13 +216,13 @@ export class CataloguesServiceService {
       })
       .subscribe({
         next: (data: any) => {
-          this.toastr.show('Analisys submitted', 'Success', { status: 'success', duration: 3000, destroyByClick: true, position: NbGlobalPhysicalPosition.TOP_RIGHT});
-          
+          this.toastr.show(this.translateService.instant('TOAST_ANALYSIS_SUBMITTED'), this.translateService.instant('TOAST_SUCCESS'), { status: 'success', duration: 3000, destroyByClick: true, position: NbGlobalPhysicalPosition.TOP_RIGHT});
+
           resolve(data)
           return data
         },
         error: error => {
-          this.toastr.show("There was an error", 'Error', { status: 'danger', duration: 3000, destroyByClick: true, position: NbGlobalPhysicalPosition.TOP_RIGHT});
+          this.toastr.show(this.translateService.instant('TOAST_GENERIC_ERROR'), this.translateService.instant('TOAST_ERROR'), { status: 'danger', duration: 3000, destroyByClick: true, position: NbGlobalPhysicalPosition.TOP_RIGHT});
           
           reject(error)
           return error

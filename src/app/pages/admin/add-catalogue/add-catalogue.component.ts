@@ -647,7 +647,7 @@ export class AddCatalogueComponent implements OnInit {
 			if(this.node.communities == '')
 			{
 				this.node.hostInvalid=true;
-				this.toastrService.danger('Catalogue communities field required for complete url', 'Error');
+				this.toastrService.danger(this.translation.instant('TOAST_CATALOGUE_COMMUNITIES_REQUIRED'), this.translation.instant('TOAST_ERROR'));
 			}
 			else
 			{
@@ -676,10 +676,10 @@ export class AddCatalogueComponent implements OnInit {
 		}
 
 		if(this.node.nameInvalid || this.node.pubNameInvalid || this.node.hostInvalid || this.node.homepageInvalid) {
-			if(this.node.nameInvalid) this.toastrService.danger('Catalogue name required', 'Error');
-			if(this.node.pubNameInvalid) this.toastrService.danger('Publisher name required', 'Error');
-			if(this.node.hostInvalid) this.toastrService.danger('Catalogue url required', 'Error');
-			if(this.node.homepageInvalid) this.toastrService.danger('Catalogue homepage required', 'Error');			
+			if(this.node.nameInvalid) this.toastrService.danger(this.translation.instant('TOAST_CATALOGUE_NAME_REQUIRED'), this.translation.instant('TOAST_ERROR'));
+			if(this.node.pubNameInvalid) this.toastrService.danger(this.translation.instant('TOAST_PUBLISHER_NAME_REQUIRED'), this.translation.instant('TOAST_ERROR'));
+			if(this.node.hostInvalid) this.toastrService.danger(this.translation.instant('TOAST_CATALOGUE_URL_REQUIRED'), this.translation.instant('TOAST_ERROR'));
+			if(this.node.homepageInvalid) this.toastrService.danger(this.translation.instant('TOAST_CATALOGUE_HOMEPAGE_REQUIRED'), this.translation.instant('TOAST_ERROR'));
 			this.loading = false;
 			return;
 		}
@@ -688,7 +688,7 @@ export class AddCatalogueComponent implements OnInit {
 		  if (!this.validateUrl(this.node.homepage)) {
 			if (this.node.nodeType !== 'DCATDUMP') {
 			  this.node.homepageInvalid = true;
-			  this.toastrService.danger('Please insert a valid url', 'Error');
+			  this.toastrService.danger(this.translation.instant('TOAST_INVALID_URL'), this.translation.instant('TOAST_ERROR'));
 			  this.loading = false;
 			  return;
 			}
@@ -698,7 +698,7 @@ export class AddCatalogueComponent implements OnInit {
 		if (!this.validateUrl(this.node.host)) {
 			if (this.node.nodeType !== 'DCATDUMP') {
 				this.node.hostInvalid = true;
-				this.toastrService.danger('Please insert a valid url', 'Error');
+				this.toastrService.danger(this.translation.instant('TOAST_INVALID_URL'), this.translation.instant('TOAST_ERROR'));
 				this.loading = false;
 				return;
 			}
@@ -783,12 +783,12 @@ export class AddCatalogueComponent implements OnInit {
 			const trimmedDumpString = (this.node.dumpString ?? '').trim();
 
 			if (trimmedDumpUrlForValidation === '' && trimmedDumpString === '') {
-			  this.toastrService.danger("Please upload the dump file or a dump url!", "Error");
+			  this.toastrService.danger(this.translation.instant('TOAST_DUMP_FILE_REQUIRED'), this.translation.instant('TOAST_ERROR'));
 			  this.loading = false;
 			  return;
 			} else {
 			  if (trimmedDumpUrlForValidation !== '' && !this.validateUrl(trimmedDumpUrlForValidation)) {
-				this.toastrService.danger('Invalid dump URL', 'Error');
+				this.toastrService.danger(this.translation.instant('TOAST_INVALID_DUMP_URL'), this.translation.instant('TOAST_ERROR'));
 				this.loading = false;
 				return;
 			  } else if (trimmedDumpUrlForValidation === '' && trimmedDumpString !== '') {

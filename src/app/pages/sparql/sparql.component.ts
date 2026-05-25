@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { DataCataglogueAPIService } from '../data-catalogue/services/data-cataglogue-api.service';
 import { CodeEditorComponent, CodeModel } from '@ngstack/code-editor';
 import { NbButtonModule, NbCardModule, NbCheckboxModule, NbDatepickerModule, NbIconModule, NbInputModule, NbListModule, NbSelectModule, NbTabsetModule, NbTagModule, NbToastrService, NbTooltipModule } from '@nebular/theme';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CarouselModule } from 'ngx-owl-carousel-o';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
@@ -35,7 +35,8 @@ export class SparqlComponent implements OnInit {
 
   constructor(
     private toastrService: NbToastrService,
-    private restApi:DataCataglogueAPIService
+    private restApi:DataCataglogueAPIService,
+    private translateService: TranslateService
   ) { }
 
   model: CodeModel = {
@@ -85,14 +86,14 @@ LIMIT 50`,
           if (data?.result != null) {
         this.query_bck = query;
         this.updateCode(data.result);
-					this.toastrService.success('Query executed successfully', 'Success');
+					this.toastrService.success(this.translateService.instant('TOAST_SPARQL_QUERY_SUCCESS'), this.translateService.instant('TOAST_SUCCESS'));
           } else {
-        this.toastrService.warning('No results returned', 'Warning');
+        this.toastrService.warning(this.translateService.instant('TOAST_SPARQL_NO_RESULTS'), this.translateService.instant('TOAST_WARNING'));
           }
         },
         error: (err) => {
           console.error('SPARQL query error', err);
-          this.toastrService.danger('Failed to execute query', 'Error');
+          this.toastrService.danger(this.translateService.instant('TOAST_SPARQL_QUERY_FAILED'), this.translateService.instant('TOAST_ERROR'));
         }
       });
   }

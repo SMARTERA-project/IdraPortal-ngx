@@ -2,10 +2,11 @@ import { Component, Input } from '@angular/core';
 import { NbButtonModule, NbCardModule, NbDialogRef } from '@nebular/theme';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   standalone: true,
-  imports: [NbCardModule, NbButtonModule, CommonModule],
+  imports: [NbCardModule, NbButtonModule, CommonModule, TranslateModule],
   selector: 'ngx-prefix-dialog',
   templateUrl: 'datalet-dialog.component.html',
   styleUrls: ['datalet-dialog.component.scss'],

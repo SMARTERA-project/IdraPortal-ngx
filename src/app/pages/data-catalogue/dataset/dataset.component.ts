@@ -185,7 +185,7 @@ export class DatasetComponent implements OnInit, OnDestroy {
     if(url!=undefined && url!=''){
       window.open(url);
     } else {
-      this.toastrService.danger("No download URL found for this distribution","Error")
+      this.toastrService.danger(this.translateService.instant('TOAST_NO_DOWNLOAD_URL'), this.translateService.instant('TOAST_ERROR'))
     }
   }
 
@@ -273,7 +273,7 @@ export class DatasetComponent implements OnInit, OnDestroy {
         },
         error: err => {
           this.loading = false;
-          this.toastrService.danger("File with url " + distribution.downloadURL + " returned " + err.status + "!", "Unable to create Datalet");
+          this.toastrService.danger(this.translateService.instant('TOAST_FILE_RETURNED_ERROR', { url: distribution.downloadURL, status: err.status }), this.translateService.instant('TOAST_UNABLE_TO_CREATE_DATALET'));
         }
       });
     } else {
@@ -284,7 +284,7 @@ export class DatasetComponent implements OnInit, OnDestroy {
         },
         error: err => {
           this.loading = false;
-          this.toastrService.danger("File with url " + distribution.downloadURL + " returned " + err.status + "!", "Unable to create Datalet");
+          this.toastrService.danger(this.translateService.instant('TOAST_FILE_RETURNED_ERROR', { url: distribution.downloadURL, status: err.status }), this.translateService.instant('TOAST_UNABLE_TO_CREATE_DATALET'));
         }
       });
     }
@@ -331,7 +331,7 @@ export class DatasetComponent implements OnInit, OnDestroy {
               })
             },
             error: err => {
-              this.toastrService.danger("Could not load the file", "Error");
+              this.toastrService.danger(this.translateService.instant('TOAST_FILE_LOAD_ERROR'), this.translateService.instant('TOAST_ERROR'));
             }
           })
         } else {

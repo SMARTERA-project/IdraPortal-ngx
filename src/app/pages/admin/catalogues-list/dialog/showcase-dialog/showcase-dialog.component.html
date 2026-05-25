@@ -5,9 +5,9 @@
   </nb-card-body>
   <nb-card-footer>
     <div class="buttons-container">
-      <button nbButton status="primary" (click)="dismiss(0)">DELETE ALL</button>
-      <button nbButton status="primary" (click)="dismiss(1)">KEEP DATASETS</button>
-      <button nbButton status="primary" (click)="dismiss(-1)">BACK</button>
+      <button nbButton status="primary" (click)="dismiss(0)">{{ 'SHOWCASE_DIALOG_DELETE_ALL' | translate }}</button>
+      <button nbButton status="primary" (click)="dismiss(1)">{{ 'SHOWCASE_DIALOG_KEEP_DATASETS' | translate }}</button>
+      <button nbButton status="primary" (click)="dismiss(-1)">{{ 'BACK' | translate }}</button>
     </div>
   </nb-card-footer>
 </nb-card>

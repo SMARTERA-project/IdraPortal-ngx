@@ -6,7 +6,7 @@ import { NgxEchartsModule } from 'ngx-echarts';
 import { delay } from 'rxjs/operators';
 import {FormControl, FormGroup, Validators, ReactiveFormsModule} from '@angular/forms';
 import * as echarts from 'echarts';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 interface TreeNode<T> {
   data: T;
@@ -108,8 +108,9 @@ export class MqaComponent implements OnInit {
     private theme: NbThemeService,
     private dataSourceBuilder: NbTreeGridDataSourceBuilder<FSEntry>, //table catalogue score
     private dataSourceBuilder_dat: NbTreeGridDataSourceBuilder<FSEntryDataset>, //table dataset score
-    private dataSourceBuilder_list: NbTreeGridDataSourceBuilder<FSEntryListCat> //table list of catalogues and datasets
-  ) { 
+    private dataSourceBuilder_list: NbTreeGridDataSourceBuilder<FSEntryListCat>, //table list of catalogues and datasets
+    private translateService: TranslateService
+  ) {
     this.dataSource = this.dataSourceBuilder.create(this.data); //table catalogue score
     this.dataSource_dat = this.dataSourceBuilder_dat.create(this.data_dat); //table dataset score
     this.dataSource_list = this.dataSourceBuilder_list.create(this.data_list); //table list of catalogues and datasets
@@ -525,7 +526,7 @@ export class MqaComponent implements OnInit {
 
   async submitAnalisysJSON(xml : String) : Promise<any>{
     if(xml == ""){
-      return alert("Please insert an url");
+      return alert(this.translateService.instant('TOAST_PLEASE_INSERT_URL'));
     }
     //xml will be added to the body of the request from a local json file because it is too long to be added here
     await this.mqaService.submitAnalisysJSON(xml)
@@ -533,7 +534,7 @@ export class MqaComponent implements OnInit {
   }
   async submitAnalisysFile() : Promise<any>{
     if(this.fileToUpload == null){
-      return alert("Please insert a file");
+      return alert(this.translateService.instant('TOAST_PLEASE_INSERT_FILE'));
     }
     await this.mqaService.submitAnalisysFile(this.fileToUpload)
     this.loadList();

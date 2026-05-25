@@ -7,7 +7,7 @@ import * as L from "leaflet";
 import * as shp from "shpjs";
 import * as toGeoJson from 'togeojson';
 import proj4 from "proj4";
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PreviewDialogComponent } from '../preview-dialog/preview-dialog.component';
 import { firstValueFrom } from 'rxjs';
 import { decodeBytesToText, extractPayloadEntries, ExtractedFileEntry, pickEntryByExtensions, pickFirstTextEntry } from '../utils/compressed-content.util';
@@ -34,6 +34,7 @@ export class GeoJsonDialogComponent {
     private restApi: DataCataglogueAPIService,
     private toastrService: NbToastrService,
     private dialogService: NbDialogService,
+    private translateService: TranslateService,
 ) {}
 
   ngOnInit() {
@@ -87,7 +88,7 @@ export class GeoJsonDialogComponent {
     } catch (error) {
       latLng[0] = 0;
       latLng[1] = 0;
-      this.toastrService.danger("Could not determine center coordinates, defaulting to [0,0]", "Warning");
+      this.toastrService.danger(this.translateService.instant('TOAST_DEFAULT_COORDINATES'), this.translateService.instant('TOAST_WARNING'));
       this.close();
       this.dialogService.open(PreviewDialogComponent, {
         context: {
@@ -131,9 +132,9 @@ export class GeoJsonDialogComponent {
     } catch (error) {
       console.log(error);
       if (this.isHttpStatus(error, 413)) {
-        this.toastrService.danger("File size too large to preview, but you can still download it.", "Error");
+        this.toastrService.danger(this.translateService.instant('TOAST_FILE_TOO_LARGE'), this.translateService.instant('TOAST_ERROR'));
       } else {
-        this.toastrService.danger("Could not load the file", "Error");
+        this.toastrService.danger(this.translateService.instant('TOAST_FILE_LOAD_ERROR'), this.translateService.instant('TOAST_ERROR'));
       }
       this.loading = false;
 
@@ -299,7 +300,7 @@ export class GeoJsonDialogComponent {
     } catch (error) {
       latLng[0] = 0;
       latLng[1] = 0;
-      this.toastrService.danger("Could not determine center coordinates, defaulting to [0,0]", "Warning");
+      this.toastrService.danger(this.translateService.instant('TOAST_DEFAULT_COORDINATES'), this.translateService.instant('TOAST_WARNING'));
       this.close();
       this.dialogService.open(PreviewDialogComponent, {
         context: {

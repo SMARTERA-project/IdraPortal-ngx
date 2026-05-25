@@ -3,9 +3,9 @@
         <div class="row mb-3">
             <div class="col-12">
                 <!-- select Catalogues -->
-                <span>Catalogues </span>
-                
-            <nb-select multiple [(selected)]="selectedCatalogues" placeholder="Multiple Select" class="w-150" (selectedChange)="onCataloguesChange($event)">
+                <span>{{ 'Catalogues' | translate }} </span>
+
+            <nb-select multiple [(selected)]="selectedCatalogues" [placeholder]="'STATISTICS_MULTIPLE_SELECT_PLACEHOLDER' | translate" class="w-150" (selectedChange)="onCataloguesChange($event)">
                 <nb-option [value]="0">{{ 'ALL_SELECTED' | translate }}</nb-option>
                 @for (catalogue of catalogueList; track catalogue.id) {
                     <nb-option [value]="catalogue.id">{{ catalogue.name }}</nb-option>
@@ -28,7 +28,7 @@
                 <div class="card">
                     <div class="card-header d-flex flex-row justify-content-between">
                         <h5 class="card-title">{{ 'MOST_ACTIVE_CATALOGUES' | translate }}</h5>
-                        <nb-select placeholder="Select Showcase" [(selected)]="selectedInterval" (selectedChange)="getStatistics()">
+                        <nb-select [placeholder]="'STATISTICS_SELECT_SHOWCASE_PLACEHOLDER' | translate" [(selected)]="selectedInterval" (selectedChange)="getStatistics()">
                         <nb-option [value]="0">{{ 'LAST_WEEK' | translate }}</nb-option>
                         <nb-option [value]="1">{{ 'LAST_MONTH' | translate }}</nb-option>
                         <nb-option [value]="2">{{ 'LAST_YEAR' | translate }}</nb-option>
@@ -36,7 +36,7 @@
                     </div>
                     <div class="card-body">
                         @if (!mostActiveHasValues) {
-                            <div class="text-muted mb-2">No catalogue activity in selected interval.</div>
+                            <div class="text-muted mb-2">{{ 'STATISTICS_NO_ACTIVITY' | translate }}</div>
                         }
                         <div echarts [options]="optionsMostActive" [merge]="dataMostActive" class="demo-chart" [autoResize]="true"></div>
                     </div>
