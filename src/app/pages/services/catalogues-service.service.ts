@@ -95,6 +95,11 @@ export class CataloguesServiceService {
   checkRemoteCatalogueHealth(url: string): Observable<any> {
     return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue/health?url=${encodeURIComponent(url)}`);
   }
+
+  getRemoteCatalogueDatasetCount(url: string, nodeType: string, apiKey: string = ''): Observable<any> {
+    const apiKeyParam = apiKey ? `&apiKey=${encodeURIComponent(apiKey)}` : '';
+    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue/datasetCount?url=${encodeURIComponent(url)}&nodeType=${encodeURIComponent(nodeType)}${apiKeyParam}`);
+  }
 	//getRemoteNodes
   getRemoteNodesJson():Observable<any>{
     return this.http.get<any>(`${this.apiEndpoint}/catalogue.json`);

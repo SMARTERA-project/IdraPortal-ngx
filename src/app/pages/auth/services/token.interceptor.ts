@@ -53,27 +53,61 @@ export class TokenInterceptor implements HttpInterceptor {
       return next.handle(req);
     }*/
     
-    return this.auth.isAuthenticatedOrRefresh().pipe(
-      switchMap(authenticated => {
+    return this.auth.getToken().pipe(
+      switchMap((token: NbAuthOAuth2JWTToken) => {
+        const accessToken = token?.getValue?.() || undefined;
+        const tokenIsValid = typeof token?.isValid === 'function' && token.isValid();
+        const payload = typeof token?.getPayload === 'function' ? token.getPayload() : null;
+        const refreshToken = (payload as any)?.refresh_token;
 
-        return this.auth.getToken().pipe(
-          switchMap((x: NbAuthOAuth2JWTToken) => {
-            
-            const token =
-              x.getValue?.() ||
-              x.getPayload()?.access_token ||
-              sessionStorage.getItem('token') || // C6: sessionStorage over localStorage
-              undefined;
-            let newHeaders = req.headers;
-            // console.log("entro " + token);
-            if (token && !req.url.includes('/IdraPortal-ngx-Translations')) {
-              newHeaders = newHeaders.set('Authorization', `Bearer ${token}`);
-            }
-            const authReq = req.clone({ headers: newHeaders });
-            return next.handle(authReq);
-          })
+        // Never logged in (no stored token at all): do not contact Keycloak.
+        if (!accessToken && !refreshToken) {
+          return next.handle(req);
+        }
+
+        // Access token still valid: attach header, no /token call needed.
+        if (tokenIsValid) {
+          let newHeaders = req.headers;
+          if (!req.url.includes('/IdraPortal-ngx-Translations')) {
+            newHeaders = newHeaders.set('Authorization', `Bearer ${accessToken}`);
+          }
+          return next.handle(req.clone({ headers: newHeaders }));
+        }
+
+        // Access token expired: only attempt /token refresh if refresh_token is still valid.
+        if (!TokenInterceptor.isJwtNotExpired(refreshToken)) {
+          return next.handle(req);
+        }
+
+        return this.auth.isAuthenticatedOrRefresh().pipe(
+          switchMap(() => this.auth.getToken().pipe(
+            switchMap((x: NbAuthOAuth2JWTToken) => {
+              const t =
+                x.getValue?.() ||
+                x.getPayload()?.access_token ||
+                sessionStorage.getItem('token') ||
+                undefined;
+              let newHeaders = req.headers;
+              if (t && !req.url.includes('/IdraPortal-ngx-Translations')) {
+                newHeaders = newHeaders.set('Authorization', `Bearer ${t}`);
+              }
+              return next.handle(req.clone({ headers: newHeaders }));
+            })
+          ))
         );
       })
     );
+  }
+
+  private static isJwtNotExpired(jwt: string | undefined | null): boolean {
+    if (!jwt || typeof jwt !== 'string') return false;
+    const parts = jwt.split('.');
+    if (parts.length !== 3) return false;
+    try {
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return !!payload?.exp && (payload.exp * 1000) > Date.now();
+    } catch {
+      return false;
+    }
   }
 }

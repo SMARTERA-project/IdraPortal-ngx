@@ -21,7 +21,7 @@
             </nb-select>
           </div>
           <div class="col-sm-2 col-md-2 col-lg-2 d-flex align-items-center gap-1">
-            <button nbButton status="basic" size="small" (click)="checkAllHealth()" [nbSpinner]="healthCheckLoading">Check Status</button>
+            <button nbButton status="basic" size="small" (click)="checkAllRemoteCatalogues()" [nbSpinner]="checkLoading">Check Status</button>
           </div>
           <div class="col-sm-2 col-md-1 col-lg-1 ">
             <button routerLink="../" nbButton outline status="success">{{ 'REMOTE_CATALOGUE_ADMIN_BACK_BUTTON' | translate }}</button>
@@ -70,6 +70,20 @@
                     [class.status-unknown]="getHealthStatus(row.data.Host) === 'UNKNOWN'">
                 {{ getHealthStatus(row.data.Host) }}
               </span>
+            </td>
+          </ng-container>
+
+          <ng-container [nbTreeGridColumnDef]="defaultColumns[6]">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef class="col-w-120">{{ 'CATALOGUE_LIST_DATASETS' | translate }}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row">
+              @if (isCheckPending(row.data.Host)) {
+                <nb-icon class="rotate_icon" icon="loader-outline"></nb-icon>
+              } @else {
+                <span>{{ getRemoteDatasetCount(row.data.Host) ?? '-' }}</span>
+                @if (row.data.Datasets != null && getRemoteDatasetCount(row.data.Host) != null) {
+                  <span nbTooltip="Local federated count" class="text-muted"> / {{ row.data.Datasets }}</span>
+                }
+              }
             </td>
           </ng-container>
 

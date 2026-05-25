@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NbActionsModule, NbButtonModule, NbCardModule, NbInputModule, NbSelectModule, NbSortDirection, NbSortRequest, NbSpinnerModule, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule } from '@nebular/theme';
+import { NbActionsModule, NbButtonModule, NbCardModule, NbIconModule, NbInputModule, NbSelectModule, NbSortDirection, NbSortRequest, NbSpinnerModule, NbTooltipModule, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule } from '@nebular/theme';
 import { CataloguesServiceService } from '../../services/catalogues-service.service';
 import { ODMSCatalogueInfo } from '../../data-catalogue/model/odmscatalogue-info';
 import { ODMSCatalogue } from '../../data-catalogue/model/odmscatalogue';
@@ -22,6 +22,7 @@ interface FSEntry {
   Type: string;
   Level: string;
   Host: string;
+  Datasets: number | null;
   index: number;
   alreadyLoaded: boolean;
 }
@@ -29,7 +30,7 @@ interface FSEntry {
 
 @Component({
 	standalone: true,
-	imports: [NbCardModule, TranslateModule, NbTreeGridModule, NbSelectModule, NbInputModule, RouterModule, NbActionsModule, NbButtonModule, NbSpinnerModule],
+	imports: [NbCardModule, TranslateModule, NbTreeGridModule, NbSelectModule, NbInputModule, RouterModule, NbActionsModule, NbButtonModule, NbSpinnerModule, NbIconModule, NbTooltipModule],
 	selector: 'ngx-remote-catalogues',
 	templateUrl: './remote-catalogues.component.html',
 	styleUrls: ['./remote-catalogues.component.scss']
@@ -40,7 +41,9 @@ export class RemoteCataloguesComponent implements OnInit {
 	loading=false;
 	id=0;
 	healthStatuses: { [key: string]: string } = {};
-	healthCheckLoading = false;
+	remoteDatasetCounts: { [host: string]: number | null } = {};
+	checkPending: { [host: string]: boolean } = {};
+	checkLoading = false;
 
 	totalCatalogues;
 	cataloguesMoreInfos: ODMSCatalogue
@@ -89,24 +92,26 @@ export class RemoteCataloguesComponent implements OnInit {
 				let level = this.getLevel(this.allRemCatJson[k].nodeType);
 				
 				let  alreadyLoaded = false;
+				let datasetCount: number | null = null;
 				for (let i = 0; i < allCatalogues.length; i++) {
 					if(allCatalogues[i].host == this.allRemCatJson[k].host){
 						alreadyLoaded = true;
+						datasetCount = allCatalogues[i].datasetCount;
 						break;
 					}
 				}
-				
+
 				let data2 = [
 						{
-						data: { Name: this.allRemCatJson[k].name, Country: this.allRemCatJson[k].country, Type: this.allRemCatJson[k].nodeType, Level: level, Host: this.allRemCatJson[k].host, index: k, alreadyLoaded: alreadyLoaded}
+						data: { Name: this.allRemCatJson[k].name, Country: this.allRemCatJson[k].country, Type: this.allRemCatJson[k].nodeType, Level: level, Host: this.allRemCatJson[k].host, Datasets: datasetCount, index: k, alreadyLoaded: alreadyLoaded}
 					}
 					];
-				
+
 				if(this.data.length==0){
-					
+
 					this.data = [
 						{
-						data: { Name: this.allRemCatJson[k].name, Country: this.allRemCatJson[k].country, Type: this.allRemCatJson[k].nodeType, Level: level, Host: this.allRemCatJson[k].host, index: k, alreadyLoaded: alreadyLoaded}
+						data: { Name: this.allRemCatJson[k].name, Country: this.allRemCatJson[k].country, Type: this.allRemCatJson[k].nodeType, Level: level, Host: this.allRemCatJson[k].host, Datasets: datasetCount, index: k, alreadyLoaded: alreadyLoaded}
 					}
 					];
 				}
@@ -119,7 +124,7 @@ export class RemoteCataloguesComponent implements OnInit {
 				this.dataSource = this.dataSourceBuilder.create(this.data);
 
 				}
-			this.checkAllHealth();
+			this.checkAllRemoteCatalogues();
 			},
 			error: (err) =>{
 				console.log(err);
@@ -127,26 +132,55 @@ export class RemoteCataloguesComponent implements OnInit {
 		});
 	}
 
-	checkAllHealth(): void {
+	checkAllRemoteCatalogues(): void {
 		if (!this.allRemCatJson || this.allRemCatJson.length === 0) { return; }
-		this.healthCheckLoading = true;
+		this.checkLoading = true;
 		let pending = this.allRemCatJson.length;
+		const finishRow = (host: string) => {
+			this.checkPending[host] = false;
+			if (--pending === 0) { this.checkLoading = false; }
+		};
 		this.allRemCatJson.forEach((cat: any) => {
+			this.checkPending[cat.host] = true;
 			this.restApi.checkRemoteCatalogueHealth(cat.host).subscribe({
 				next: (result) => {
-					this.healthStatuses[cat.host] = result?.status || 'UNKNOWN';
-					if (--pending === 0) { this.healthCheckLoading = false; }
+					const status = result?.status || 'UNKNOWN';
+					this.healthStatuses[cat.host] = status;
+					if (status === 'ONLINE') {
+						this.restApi.getRemoteCatalogueDatasetCount(cat.host, cat.nodeType, cat.APIKey || '').subscribe({
+							next: (countResult) => {
+								this.remoteDatasetCounts[cat.host] = (countResult && countResult.count != null) ? countResult.count : null;
+								finishRow(cat.host);
+							},
+							error: () => {
+								this.remoteDatasetCounts[cat.host] = null;
+								finishRow(cat.host);
+							}
+						});
+					} else {
+						this.remoteDatasetCounts[cat.host] = null;
+						finishRow(cat.host);
+					}
 				},
 				error: () => {
 					this.healthStatuses[cat.host] = 'OFFLINE';
-					if (--pending === 0) { this.healthCheckLoading = false; }
+					this.remoteDatasetCounts[cat.host] = null;
+					finishRow(cat.host);
 				}
 			});
 		});
 	}
 
+	isCheckPending(host: string): boolean {
+		return !!this.checkPending[host];
+	}
+
 	getHealthStatus(host: string): string {
 		return this.healthStatuses[host] || 'UNKNOWN';
+	}
+
+	getRemoteDatasetCount(host: string): number | null {
+		return this.remoteDatasetCounts[host] ?? null;
 	}
 
 getLevel(nodeType: string): string {
@@ -183,7 +217,7 @@ getLevel(nodeType: string): string {
 
   // ------------------------- TABLE
   iconColumn = 'Actions';
-  defaultColumns = [ 'Name', 'Country', 'Type', 'Level', 'Host', 'Status', 'Actions'];
+  defaultColumns = [ 'Name', 'Country', 'Type', 'Level', 'Host', 'Status', 'Datasets', 'Actions'];
   allColumns = [ ...this.defaultColumns ];
 
   dataSource: NbTreeGridDataSource<FSEntry>;
