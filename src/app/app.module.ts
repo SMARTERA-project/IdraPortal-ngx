@@ -36,6 +36,7 @@ import { provideCodeEditor } from '@ngstack/code-editor';
 import { NbAuthModule,  NbOAuth2AuthStrategy, NbOAuth2ClientAuthMethod, NbOAuth2GrantType, NbOAuth2ResponseType } from '@nebular/auth';
 import { OidcJWTToken } from './pages/auth/oidc/oidc';
 import { TokenInterceptor } from './pages/auth/services/token.interceptor';
+import { HttpErrorInterceptor } from './@core/interceptors/http-error.interceptor';
 import { JwtHelperService, JwtModule } from '@auth0/angular-jwt';
 import { Observable } from 'rxjs';
 import { SmartEraOverlayContainerAdapter } from './@theme/overlay/smartera-overlay-container-adapter';
@@ -50,13 +51,12 @@ const DEFAULT_CLIENT_SECRET = '';
 const DEFAULT_BASE_ENDPOINT = 'http://localhost/auth/realms/smartera/protocol/openid-connect';
 
 export class CustomTranslateLoader implements TranslateLoader {
-  
+
   constructor(private httpClient: HttpClient) { }
 
   getTranslation(lang: string): Observable<any> {
     const url = `${URL}/main/v1.0/${lang}.json`;
-    let idra = this.httpClient.get(url);
-   return idra;
+    return this.httpClient.get(url);
   }
 }
 
@@ -161,6 +161,11 @@ export class CustomTranslateLoader implements TranslateLoader {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: TokenInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpErrorInterceptor,
       multi: true
     },
     {

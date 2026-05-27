@@ -1,0 +1,35 @@
+.error-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 1.5rem;
+
+  .error-card {
+    max-width: 32rem;
+    width: 100%;
+  }
+
+  nb-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .error-message {
+    font-size: 1rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .error-code,
+  .error-correlation {
+    margin: 0;
+    color: var(--text-hint-color);
+  }
+
+  nb-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}

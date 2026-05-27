@@ -217,15 +217,11 @@ export class CataloguesServiceService {
       .subscribe({
         next: (data: any) => {
           this.toastr.show(this.translateService.instant('TOAST_ANALYSIS_SUBMITTED'), this.translateService.instant('TOAST_SUCCESS'), { status: 'success', duration: 3000, destroyByClick: true, position: NbGlobalPhysicalPosition.TOP_RIGHT});
-
           resolve(data)
-          return data
         },
         error: error => {
-          this.toastr.show(this.translateService.instant('TOAST_GENERIC_ERROR'), this.translateService.instant('TOAST_ERROR'), { status: 'danger', duration: 3000, destroyByClick: true, position: NbGlobalPhysicalPosition.TOP_RIGHT});
-          
+          // HTTP error toast surfaced globally by HttpErrorInterceptor + ErrorService.
           reject(error)
-          return error
         }
       })
     })

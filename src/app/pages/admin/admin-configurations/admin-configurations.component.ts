@@ -156,10 +156,7 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
         );
       },
       error: () => {
-        this.toastrService.danger(
-          this.translation.instant('CONFIGURATION_SAVE_ERROR'),
-          this.translation.instant('TOAST_ERROR')
-        );
+        // HTTP error surfaced globally by HttpErrorInterceptor + ErrorService.
       }
     });
   }

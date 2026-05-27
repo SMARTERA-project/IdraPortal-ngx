@@ -44,7 +44,12 @@ const routes: Routes = [{
       loadComponent: () => import('./statistics/statistics.component')
       .then(m => m.StatisticsComponent),
     },
-    { 
+    {
+      path: 'error',
+      loadComponent: () => import('./error/error.page')
+        .then(m => m.ErrorPage),
+    },
+    {
       path: '',
       redirectTo: 'home',
       pathMatch: 'full',

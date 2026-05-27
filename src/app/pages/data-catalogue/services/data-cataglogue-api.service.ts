@@ -53,12 +53,16 @@ export class DataCataglogueAPIService {
     return this.http.post<SearchResult>(`${this.apiEndpoint}/Idra/api/v1/client/search`,parameters);
   }
 
+  // These callers render their own specific error message (query failed / file URL+status),
+  // so opt out of the global ErrorService toast to avoid a duplicate notification.
+  private readonly suppressGlobalError = new HttpHeaders({ 'X-Suppress-Global-Error': 'true' });
+
   executeSPARQLQuery(query: string, outputFormat: string):Observable<any>{
-    return this.http.post<any>(`${this.apiEndpoint}/Idra/api/v1/client/sparql/query`,{query: query, format: outputFormat});
+    return this.http.post<any>(`${this.apiEndpoint}/Idra/api/v1/client/sparql/query`,{query: query, format: outputFormat}, {headers: this.suppressGlobalError});
   }
 
   downloadFromUri(distribution:DCATDistribution):Observable<any>{
-    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/client/downloadFromUri?downloadFile=false&url=${encodeURIComponent(distribution.downloadURL)}&id=${distribution.id}`);
+    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/client/downloadFromUri?downloadFile=false&url=${encodeURIComponent(distribution.downloadURL)}&id=${distribution.id}`, {headers: this.suppressGlobalError});
   }
 
   downloadFromUriAsBlob(distribution:DCATDistribution):Observable<HttpResponse<Blob>>{
@@ -93,7 +97,7 @@ export class DataCataglogueAPIService {
   }
 
   downloadRDFfromUrl(distribution:DCATDistribution):Observable<any>{
-    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/client/downloadFromUri?url=${encodeURIComponent(distribution.downloadURL)}&method=export&format=RDF&id=${distribution.id}`, {headers: new HttpHeaders({'Accept': 'application/xml'}), responseType: 'text' as 'json'}); 
+    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/client/downloadFromUri?url=${encodeURIComponent(distribution.downloadURL)}&method=export&format=RDF&id=${distribution.id}`, {headers: new HttpHeaders({'Accept': 'application/xml', 'X-Suppress-Global-Error': 'true'}), responseType: 'text' as 'json'});
   }
 
   downloadZipFromUrl(distribution:DCATDistribution):Observable<Blob>{

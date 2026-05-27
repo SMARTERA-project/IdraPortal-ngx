@@ -1,0 +1,23 @@
+<nb-card class="error-modal" status="danger">
+  <nb-card-header>
+    <nb-icon icon="alert-triangle-outline"></nb-icon>
+    <span>{{ 'ERR.MODAL.TITLE' | translate }}</span>
+  </nb-card-header>
+  <nb-card-body>
+    <p class="error-message">{{ message }}</p>
+    <p class="error-code" *ngIf="code">
+      <small>{{ code }}</small>
+    </p>
+    <p class="error-correlation" *ngIf="correlationId">
+      <small>{{ 'ERR.MODAL.REFERENCE' | translate }}: {{ correlationId }}</small>
+    </p>
+  </nb-card-body>
+  <nb-card-footer>
+    <button nbButton status="basic" (click)="onClose()">
+      {{ 'ERR.MODAL.CLOSE' | translate }}
+    </button>
+    <button nbButton status="primary" *ngIf="retry" (click)="onRetry()">
+      {{ 'ERR.MODAL.RETRY' | translate }}
+    </button>
+  </nb-card-footer>
+</nb-card>

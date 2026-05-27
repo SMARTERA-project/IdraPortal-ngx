@@ -62,6 +62,9 @@
           </div>
           <div class="row mb-1">
             <div class="col-2 d-flex align-items-center">
+              <nb-checkbox (checkedChange)="toggleHasHVDCategory($event)">{{ 'HOME_IS_HVD' | translate }}</nb-checkbox>
+            </div>
+            <div class="col-2 d-flex align-items-center">
               <nb-checkbox (checkedChange)="toggleMultiLanguage($event)">{{ 'HOME_MULTI_LANGUAGE' | translate }}</nb-checkbox>
             </div>
             @if (multiLanguageChecked) {<div class="col-2 d-flex align-items-center">
@@ -93,7 +96,7 @@
                 <nb-option [value]="1">{{ 'HOME_DESCENDENT' | translate }}</nb-option>
               </nb-select>
             </div>
-            <div class="col-md-3 col-12 d-flex align-items-center">
+            <div class="col-md-4 col-12 d-flex align-items-center">
               <span class="minwidth-fit-content mr-1" >{{ 'HOME_MAX_RESULTS_PER_PAGE' | translate }}</span>
               <nb-select [(selected)]="maxResultPerPage" placeholder="25" class="width-150">
                 <nb-option [value]="5">5</nb-option>
@@ -103,9 +106,6 @@
               </nb-select>
             </div>
             <div class="col-md-2 col-12 d-flex align-items-center">
-              <nb-checkbox (checkedChange)="toggleHasHVDCategory($event)">{{ 'HOME_IS_HVD' | translate }}</nb-checkbox>
-            </div>
-            <div class="col-md-1 col-12 d-flex align-items-center">
               <button 
                 nbButton
                 fullWidth

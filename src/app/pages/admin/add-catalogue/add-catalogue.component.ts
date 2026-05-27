@@ -843,9 +843,8 @@ export class AddCatalogueComponent implements OnInit {
 					next: () => {
 						this.router.navigate(['/administration/adminCatalogues']);
 					},
-					error: (err) => {
-						const msg = this.extractErrorMessage(err, 'Could not update catalogue. Please check your data and try again.');
-						this.toastrService.danger(msg, 'Error', { duration: 8000 } as any);
+					error: () => {
+						// HTTP error surfaced globally by HttpErrorInterceptor + ErrorService.
 					}
 				})
 
@@ -866,9 +865,8 @@ export class AddCatalogueComponent implements OnInit {
 					next: () => {
 						this.router.navigate(['/administration/adminCatalogues']);
 					},
-					error: (err) => {
-						const msg = this.extractErrorMessage(err, 'Could not add catalogue. Please check your data and try again.');
-						this.toastrService.danger(msg, 'Error', { duration: 8000 } as any);
+					error: () => {
+						// HTTP error surfaced globally by HttpErrorInterceptor + ErrorService.
 					}
 				})
 				

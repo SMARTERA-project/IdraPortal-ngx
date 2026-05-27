@@ -119,9 +119,9 @@ export class DatasetComponent implements OnInit, OnDestroy {
         })
         this.loading=false;
      },
-      error: (err)=>{
+      error: ()=>{
          this.loading=false;
-         this.toastrService.danger(err.error.userMessage,"Error")
+         // HTTP error surfaced globally by HttpErrorInterceptor + ErrorService.
          this.router.navigate(['/pages/datasets']);
        }
     });

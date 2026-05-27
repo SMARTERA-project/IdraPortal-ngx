@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MqaService } from '../services/mqa.service';
-import { NbAccordionModule, NbButtonModule, NbCardModule, NbFormFieldModule, NbIconModule, NbInputModule, NbSortDirection, NbSortRequest, NbTableModule, NbThemeService, NbTooltipModule, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule, NbUserModule } from '@nebular/theme';
+import { NbAccordionModule, NbButtonModule, NbCardModule, NbFormFieldModule, NbGlobalPhysicalPosition, NbIconModule, NbInputModule, NbSortDirection, NbSortRequest, NbTableModule, NbThemeService, NbToastrService, NbTooltipModule, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule, NbUserModule } from '@nebular/theme';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { delay } from 'rxjs/operators';
 import {FormControl, FormGroup, Validators, ReactiveFormsModule} from '@angular/forms';
@@ -109,7 +109,8 @@ export class MqaComponent implements OnInit {
     private dataSourceBuilder: NbTreeGridDataSourceBuilder<FSEntry>, //table catalogue score
     private dataSourceBuilder_dat: NbTreeGridDataSourceBuilder<FSEntryDataset>, //table dataset score
     private dataSourceBuilder_list: NbTreeGridDataSourceBuilder<FSEntryListCat>, //table list of catalogues and datasets
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private toastr: NbToastrService,
   ) {
     this.dataSource = this.dataSourceBuilder.create(this.data); //table catalogue score
     this.dataSource_dat = this.dataSourceBuilder_dat.create(this.data_dat); //table dataset score
@@ -526,7 +527,8 @@ export class MqaComponent implements OnInit {
 
   async submitAnalisysJSON(xml : String) : Promise<any>{
     if(xml == ""){
-      return alert(this.translateService.instant('TOAST_PLEASE_INSERT_URL'));
+      this.toastr.show(this.translateService.instant('TOAST_PLEASE_INSERT_URL'), this.translateService.instant('TOAST_WARNING'), { status: 'warning', duration: 3000, destroyByClick: true, position: NbGlobalPhysicalPosition.TOP_RIGHT });
+      return;
     }
     //xml will be added to the body of the request from a local json file because it is too long to be added here
     await this.mqaService.submitAnalisysJSON(xml)
@@ -534,7 +536,8 @@ export class MqaComponent implements OnInit {
   }
   async submitAnalisysFile() : Promise<any>{
     if(this.fileToUpload == null){
-      return alert(this.translateService.instant('TOAST_PLEASE_INSERT_FILE'));
+      this.toastr.show(this.translateService.instant('TOAST_PLEASE_INSERT_FILE'), this.translateService.instant('TOAST_WARNING'), { status: 'warning', duration: 3000, destroyByClick: true, position: NbGlobalPhysicalPosition.TOP_RIGHT });
+      return;
     }
     await this.mqaService.submitAnalisysFile(this.fileToUpload)
     this.loadList();
