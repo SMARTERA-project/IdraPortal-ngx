@@ -69,7 +69,7 @@ export class DataCataglogueAPIService {
     const targetUrl = distribution.downloadURL || distribution.accessURL;
     return this.http.get(
       `${this.apiEndpoint}/Idra/api/v1/client/downloadFromUri?downloadFile=true&isPreview=true&previewMaxMB=${this.previewMaxMb}&url=${encodeURIComponent(targetUrl)}&id=${distribution.id}`,
-      { observe: 'response', responseType: 'blob' }
+      { observe: 'response', responseType: 'blob', headers: this.suppressGlobalError }
     );
   }
 
@@ -80,7 +80,7 @@ export class DataCataglogueAPIService {
 
     return this.http.get(
       `${this.apiEndpoint}/Idra/api/v1/client/downloadFromUri?downloadFile=true&isPreview=true&previewMaxMB=${this.previewMaxMb}&url=${encodeURIComponent(url)}${idQuery}`,
-      { observe: 'response', responseType: 'blob' }
+      { observe: 'response', responseType: 'blob', headers: this.suppressGlobalError }
     );
   }
 
