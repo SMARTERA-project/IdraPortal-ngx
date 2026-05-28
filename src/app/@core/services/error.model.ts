@@ -1,4 +1,4 @@
-export type ErrorSeverity = 'toast' | 'modal' | 'inline' | 'page';
+export type ErrorSeverity = 'toast' | 'inline' | 'page';
 
 export interface AppError {
   code: string;
@@ -12,7 +12,6 @@ export interface AppError {
 export interface ErrorContext {
   severity?: ErrorSeverity;
   silent?: boolean;
-  retry?: () => void;
   source?: string;
 }
 

@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-import { NbDialogService, NbToastrService, NbComponentStatus } from '@nebular/theme';
+import { NbToastrService, NbComponentStatus } from '@nebular/theme';
 import { TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { AppError, ErrorContext, ErrorSeverity } from './error.model';
-import { ErrorModalComponent } from '../components/error-modal/error-modal.component';
 
 // Master switch for the unified error system.
 // Plan-18 stripped all direct toastr.show() calls from component HTTP error paths,
@@ -20,7 +19,6 @@ export class ErrorService {
 
   constructor(
     private toastr: NbToastrService,
-    private dialog: NbDialogService,
     private translate: TranslateService,
     private router: Router,
   ) {}
@@ -47,17 +45,6 @@ export class ErrorService {
           duration: 5000,
         });
         break;
-      case 'modal':
-        this.dialog.open(ErrorModalComponent, {
-          context: {
-            message,
-            code: error.code,
-            correlationId: error.correlationId,
-            retry: context.retry,
-          },
-          closeOnBackdropClick: true,
-        });
-        break;
       case 'inline':
         this.inline$.next(error);
         break;
@@ -72,10 +59,7 @@ export class ErrorService {
   private defaultSeverity(error: AppError): ErrorSeverity {
     if (error.httpStatus === 401) {
       this.router.navigate(['/auth/login']);
-      return 'toast';
     }
-    if (error.httpStatus === 0) return 'toast';
-    if (error.httpStatus >= 500) return 'modal';
     return 'toast';
   }
 

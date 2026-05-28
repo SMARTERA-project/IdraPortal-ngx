@@ -50,11 +50,14 @@ function normalize(err: HttpErrorResponse): AppError {
     };
   }
   const body: any = err.error ?? {};
-  const code: string = body.errorCode || fallbackCodeFromStatus(err.status);
+  const fallback = fallbackFromStatus(err.status);
   return {
-    code,
+    code: body.errorCode || fallback.code,
     httpStatus: err.status,
-    i18nKey: codeToI18nKey(code),
+    // Backend (GlobalExceptionMapper) populates userMessageKey from the canonical
+    // ErrorCode -> i18n key mapping. Fall back to a status-based key when the
+    // body isn't an Idra ErrorResponse (e.g. Keycloak 401 passthrough).
+    i18nKey: body.userMessageKey || fallback.key,
     correlationId: body.correlationId || readCorrelationId(err),
     raw: err,
   };
@@ -64,25 +67,13 @@ function readCorrelationId(err: HttpErrorResponse): string | undefined {
   return err.headers?.get?.('X-Correlation-Id') ?? undefined;
 }
 
-function fallbackCodeFromStatus(status: number): string {
-  if (status === 401) return 'ERR_UNAUTHORIZED';
-  if (status === 403) return 'ERR_FORBIDDEN';
-  if (status === 404) return 'ERR_NOT_FOUND';
-  if (status === 409) return 'ERR_CONFLICT';
-  if (status === 504) return 'ERR_TIMEOUT';
-  if (status >= 500) return 'ERR_INTERNAL';
-  if (status >= 400) return 'ERR_BAD_REQUEST';
-  return 'ERR_INTERNAL';
-}
-
-const CLIENT_CODE_MAP: Record<string, string> = {
-  NETWORK_OFFLINE: 'ERR.NETWORK.OFFLINE',
-  CLIENT_TIMEOUT: 'ERR.NETWORK.TIMEOUT',
-};
-
-function codeToI18nKey(code: string): string {
-  if (code.startsWith('ERR_')) {
-    return 'ERR.' + code.substring(4).replace(/_/g, '.');
-  }
-  return CLIENT_CODE_MAP[code] ?? 'ERR.GENERIC.INTERNAL';
+function fallbackFromStatus(status: number): { code: string; key: string } {
+  if (status === 401) return { code: 'ERR_UNAUTHORIZED', key: 'ERR.AUTH.UNAUTHORIZED' };
+  if (status === 403) return { code: 'ERR_FORBIDDEN', key: 'ERR.AUTH.FORBIDDEN' };
+  if (status === 404) return { code: 'ERR_NOT_FOUND', key: 'ERR.GENERIC.NOT_FOUND' };
+  if (status === 409) return { code: 'ERR_CONFLICT', key: 'ERR.GENERIC.CONFLICT' };
+  if (status === 504) return { code: 'ERR_TIMEOUT', key: 'ERR.GENERIC.TIMEOUT' };
+  if (status >= 500) return { code: 'ERR_INTERNAL', key: 'ERR.GENERIC.INTERNAL' };
+  if (status >= 400) return { code: 'ERR_BAD_REQUEST', key: 'ERR.GENERIC.BAD_REQUEST' };
+  return { code: 'ERR_INTERNAL', key: 'ERR.GENERIC.INTERNAL' };
 }
