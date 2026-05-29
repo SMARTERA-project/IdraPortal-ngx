@@ -6,7 +6,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
-import { HttpClient, HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ConfigModule } from 'ngx-config-json';
 import { CoreModule } from './@core/core.module';
 import { ThemeModule } from './@theme/theme.module';
@@ -37,6 +37,7 @@ import { NbAuthModule,  NbOAuth2AuthStrategy, NbOAuth2ClientAuthMethod, NbOAuth2
 import { OidcJWTToken } from './pages/auth/oidc/oidc';
 import { TokenInterceptor } from './pages/auth/services/token.interceptor';
 import { HttpErrorInterceptor } from './@core/interceptors/http-error.interceptor';
+import { SUPPRESS_GLOBAL_ERROR_HEADER } from './@core/services/error.model';
 import { JwtHelperService, JwtModule } from '@auth0/angular-jwt';
 import { Observable } from 'rxjs';
 import { SmartEraOverlayContainerAdapter } from './@theme/overlay/smartera-overlay-container-adapter';
@@ -56,7 +57,10 @@ export class CustomTranslateLoader implements TranslateLoader {
 
   getTranslation(lang: string): Observable<any> {
     const url = `${URL}/main/v1.0/${lang}.json`;
-    return this.httpClient.get(url);
+    // Loader hits raw.githubusercontent.com; transient/CORS/offline failures
+    // must not surface a NETWORK_OFFLINE toast on every page that boots i18n.
+    const headers = new HttpHeaders().set(SUPPRESS_GLOBAL_ERROR_HEADER, '1');
+    return this.httpClient.get(url, { headers });
   }
 }
 
