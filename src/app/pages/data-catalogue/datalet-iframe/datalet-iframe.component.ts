@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NbCardModule, NbDialogRef, NbSpinnerModule } from '@nebular/theme';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from '../../../@core/services/app-config.service';
 import { SafePipe } from '../../../@theme/pipes';
 
 @Component({
@@ -24,22 +24,18 @@ export class DataletIframeComponent implements OnInit {
 
   constructor(
     protected dialogRef: NbDialogRef<DataletIframeComponent>,
-    private configService: ConfigService<Record<string, any>>
+    private configService: AppConfigService
     ) {
       this.dataletBaseUrl = this.configService.config["datalet_base_url"];
-      console.log(this.dataletBaseUrl);
      }
 
   ngOnInit(): void {
     this.iframeUrl=`${this.dataletBaseUrl}?ln=en&format=${this.format}&nodeID=${this.nodeID}&distributionID=${this.distributionID}&datasetID=${this.datasetID}&url=${encodeURIComponent(this.url)}`
-    // check when the iframe is loaded
-    let iframe = document.getElementById('iframe') as HTMLIFrameElement;
-    iframe.onload = (event: Event) => {
-      this.loading = false;
-    }
-    iframe.onerror = (event: Event) => {
-      this.loading = false;
-    }
+    // Load/error state is driven by the iframe's (load)/(error) template bindings.
+  }
+
+  onIframeSettled(): void {
+    this.loading = false;
   }
 
   close() {

@@ -28,8 +28,8 @@ export class DataletDialogComponent {
     }
 
     ngOnInit() {
-      // Datalet HTML comes from the admin-configured DEEP platform (DATALET_URL).
-      // It contains <iframe> embeds — trust is placed in the DEEP service.
+      // Bound to a sandboxed iframe's [srcdoc] (see template). The sandbox isolates
+      // the datalet markup from the app, so trusting it here is safe.
       this.safeDatalet = this.sanitizer.bypassSecurityTrustHtml(this.datalet);
     }
 }

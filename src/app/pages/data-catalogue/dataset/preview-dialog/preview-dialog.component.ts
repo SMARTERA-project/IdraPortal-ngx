@@ -24,6 +24,7 @@ export class PreviewDialogComponent implements AfterViewInit, OnDestroy {
   private readonly maxDecodedPreviewChars = 20 * 1024 * 1024;
   private readonly maxTableRows = 1000;
   private activeObjectUrl: string | null = null;
+  private googleViewerInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     protected ref: NbDialogRef<PreviewDialogComponent>,
@@ -31,11 +32,20 @@ export class PreviewDialogComponent implements AfterViewInit, OnDestroy {
   ) {}
 
   close() {
+    this.clearGoogleViewerInterval();
     this.releaseObjectUrl();
     this.ref.close();
   }
   ngOnDestroy(): void {
+    this.clearGoogleViewerInterval();
     this.releaseObjectUrl();
+  }
+
+  private clearGoogleViewerInterval(): void {
+    if (this.googleViewerInterval !== null) {
+      clearInterval(this.googleViewerInterval);
+      this.googleViewerInterval = null;
+    }
   }
   async ngAfterViewInit() {
     if (this.text !== undefined && this.text !== null) {
@@ -263,23 +273,24 @@ export class PreviewDialogComponent implements AfterViewInit, OnDestroy {
     container.innerHTML = '';
     this.loading = true;
 
-    const src = 'https://docs.google.com/gview?url=' + this.url + '&embedded=true';
+    const src = 'https://docs.google.com/gview?url=' + encodeURIComponent(this.url) + '&embedded=true';
     const iframe = document.createElement('iframe');
     iframe.setAttribute('style', 'height: 70vh;width: 80vw;');
     iframe.src = src;
 
-    const interval = setInterval(() => {
+    this.clearGoogleViewerInterval();
+    this.googleViewerInterval = setInterval(() => {
       this.loading = true;
       iframe.src = src;
     }, 5000);
 
     iframe.onload = () => {
       this.loading = false;
-      clearInterval(interval);
+      this.clearGoogleViewerInterval();
     };
     iframe.onerror = () => {
       this.loading = false;
-      clearInterval(interval);
+      this.clearGoogleViewerInterval();
     };
 
     container.appendChild(iframe);

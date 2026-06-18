@@ -35,6 +35,11 @@ export class ErrorService {
     if (!ERROR_SERVICE_ENABLED) return;
     if (context.silent) return;
 
+    // On 401 the session is gone — send the user to the Keycloak login route.
+    if (error.httpStatus === 401) {
+      this.router.navigate(['/keycloak-auth']);
+    }
+
     const severity: ErrorSeverity = context.severity ?? this.defaultSeverity(error);
     const message = this.translate.instant(error.i18nKey, error.params ?? {});
 
@@ -56,10 +61,7 @@ export class ErrorService {
     }
   }
 
-  private defaultSeverity(error: AppError): ErrorSeverity {
-    if (error.httpStatus === 401) {
-      this.router.navigate(['/auth/login']);
-    }
+  private defaultSeverity(_error: AppError): ErrorSeverity {
     return 'toast';
   }
 

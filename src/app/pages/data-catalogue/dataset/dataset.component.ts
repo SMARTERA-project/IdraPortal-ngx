@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NbActionsModule, NbCardModule, NbDialogService, NbListModule, NbSpinnerModule, NbTagModule, NbToastrService, NbTooltipModule } from '@nebular/theme';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from '../../../@core/services/app-config.service';
 import { DataletIframeComponent } from '../datalet-iframe/datalet-iframe.component';
 import { DistributionComponent } from '../distribution/distribution.component';
 import { DCATDataset } from '../model/dcatdataset';
@@ -65,7 +65,7 @@ export class DatasetComponent implements OnInit, OnDestroy {
     private restApi: DataCataglogueAPIService,
     private toastrService: NbToastrService,
     private dialogService: NbDialogService,
-    private configService: ConfigService<Record<string, any>>,
+    private configService: AppConfigService,
     private translateService: TranslateService,
     private metadataLocalizationService: MetadataLocalizationService,
     ) { 

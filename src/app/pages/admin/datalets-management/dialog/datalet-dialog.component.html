@@ -1,7 +1,10 @@
 <nb-card >
     <nb-card-header>{{ title }}</nb-card-header>
     <nb-card-body >
-      <div [innerHTML]="safeDatalet"></div>
+      <!-- Sandboxed iframe (no allow-same-origin): isolates the datalet markup from the app. -->
+      <iframe [srcdoc]="safeDatalet"
+              sandbox="allow-scripts allow-popups allow-forms"
+              style="width:100%; height:60vh; border:0;"></iframe>
     </nb-card-body>
     <nb-card-footer>
       <div class="button-container">

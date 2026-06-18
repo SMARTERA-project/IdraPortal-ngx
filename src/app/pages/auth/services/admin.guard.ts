@@ -19,7 +19,14 @@ export class AdminGuard implements CanActivate {
       map(roles => {
         const allowed = roles.includes('IDRA_ADMIN') || roles.includes('IDRA_EDITOR');
         if (!allowed) {
-          this.router.navigate(['/']);
+          // ANONYMOUS here means the session is genuinely dead (access token
+          // expired AND refresh failed) — send the user to re-authenticate
+          // instead of silently dropping them on the public home page.
+          if (roles.includes('ANONYMOUS')) {
+            this.router.navigate(['/keycloak-auth']);
+          } else {
+            this.router.navigate(['/']);
+          }
         }
         return allowed;
       })

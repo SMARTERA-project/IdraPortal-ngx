@@ -14,3 +14,7 @@ FROM nginx
 EXPOSE 80
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
+# Runtime config: regenerates assets/env.js from PORTAL_* env vars at startup.
+COPY docker/40-generate-env.sh /docker-entrypoint.d/40-generate-env.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.d/40-generate-env.sh \
+    && chmod +x /docker-entrypoint.d/40-generate-env.sh

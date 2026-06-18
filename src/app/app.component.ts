@@ -4,7 +4,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 import { Component } from '@angular/core';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from './@core/services/app-config.service';
 import { NbOAuth2AuthStrategy, NbOAuth2ClientAuthMethod, NbOAuth2GrantType, NbOAuth2ResponseType } from '@nebular/auth';
 import { OidcJWTToken } from './pages/auth/oidc/oidc';
 import { RouterOutlet } from '@angular/router';
@@ -20,7 +20,7 @@ export class AppComponent {
 
   constructor(
     oauthStrategy: NbOAuth2AuthStrategy,
-    private config:ConfigService<Record<string, any>>,
+    private config:AppConfigService,
     private translate: TranslateService,
     ) {
     const configuredLanguages = ((this.config.config['languages'] || []) as string[])
@@ -62,23 +62,29 @@ export class AppComponent {
       this.config.config['dashboardBaseURL'] || window.location.origin;
     const keycloakClientId =
       this.config.config['client_id'] || 'data-platform';
-    const keycloakClientSecret =
-      this.config.config['client_secret'] ?? '';
     const authProfile = this.config.config['authProfile'] || 'oidc';
+
+    const keycloakOidcBase =
+      `${keycloakBaseUrl}/auth/realms/${keycloakRealm}/protocol/openid-connect`;
+    const idraBaseUrl = this.config.config['idra_base_url'] || '';
+    // BFF token endpoint: the confidential client_secret lives only in Idra, which
+    // performs the code/refresh exchange. The browser never holds the secret.
+    const bffTokenEndpoint = `${idraBaseUrl}/Idra/api/v1/administration/oauth/token`;
 
     oauthStrategy.setOptions({
       name: authProfile,
       clientId: keycloakClientId,
-      clientSecret: keycloakClientSecret,
-      baseEndpoint: `${keycloakBaseUrl}/auth/realms/${keycloakRealm}/protocol/openid-connect`,
+      // baseEndpoint empty: authorize goes to Keycloak, token/refresh go to the
+      // Idra BFF — both endpoints are absolute URLs below.
+      baseEndpoint: '',
       clientAuthMethod: NbOAuth2ClientAuthMethod.NONE,
       token: {
-        endpoint: '/token',
+        endpoint: bffTokenEndpoint,
         redirectUri: `${dashboardBaseUrl}/keycloak-auth/callback`,
         class: OidcJWTToken,
       },
       authorize: {
-        endpoint: '/auth',
+        endpoint: `${keycloakOidcBase}/auth`,
         scope: 'openid',
         redirectUri: `${dashboardBaseUrl}/keycloak-auth/callback`,
         responseType: NbOAuth2ResponseType.CODE
@@ -88,7 +94,7 @@ export class AppComponent {
         failure: null,
       },
       refresh: {
-        endpoint: '/token',
+        endpoint: bffTokenEndpoint,
         grantType: NbOAuth2GrantType.REFRESH_TOKEN,
         scope: 'openid'
       }

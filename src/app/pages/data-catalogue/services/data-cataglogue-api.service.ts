@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from '../../../@core/services/app-config.service';
 import { Observable } from 'rxjs';
 import { Datalet } from '../model/datalet';
 import { DCATDataset } from '../model/dcatdataset';
@@ -20,7 +20,7 @@ export class DataCataglogueAPIService {
   private apiEndpoint;
   private readonly previewMaxMb = 15;
 
-  constructor(private config:ConfigService<Record<string, any>>,private http:HttpClient) { 
+  constructor(private config:AppConfigService,private http:HttpClient) { 
     this.apiEndpoint=this.config.config["idra_base_url"];
   }
 

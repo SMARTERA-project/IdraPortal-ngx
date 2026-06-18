@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from '../../@core/services/app-config.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ export class CataloguesService {
 
   constructor(
     private http: HttpClient,
-    private config: ConfigService<Record<string, any>>,
+    private config: AppConfigService,
   ) {
     this.apiEndpoint = this.config.config['idra_base_url'];
   }

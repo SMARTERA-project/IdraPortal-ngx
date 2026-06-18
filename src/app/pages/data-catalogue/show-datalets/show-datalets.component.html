@@ -11,6 +11,13 @@
                 <nb-option [value]='datalet'>{{ datalet.title }}</nb-option>
             }
         </nb-select>
-       <div [innerHTML]="selected.datalet_html | safeHtml"></div>
+       <!-- Datalet HTML is rendered inside a sandboxed iframe (no allow-same-origin):
+            any script in the stored markup runs in an opaque origin and cannot reach
+            the parent app, its DOM, or the auth token. -->
+       @if (selected) {
+         <iframe [srcdoc]="selected.datalet_html | safeHtml"
+                 sandbox="allow-scripts allow-popups allow-forms"
+                 style="width:100%; height:60vh; border:0;"></iframe>
+       }
     </nb-card-body>
 </nb-card>

@@ -4,7 +4,7 @@ import { NbAuthResult, NbAuthService } from '@nebular/auth';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NB_WINDOW } from '@nebular/theme';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from '../../../@core/services/app-config.service';
 
 
 @Component({
@@ -17,7 +17,7 @@ export class AuthLogoutComponent implements OnInit, OnDestroy {
 
   constructor(private authService: NbAuthService,
     private router: Router,
-    private config: ConfigService<Record<string, any>>,
+    private config: AppConfigService,
     @Inject(NB_WINDOW) private window: Window) {
   }
 

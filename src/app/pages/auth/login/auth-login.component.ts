@@ -2,7 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NbAuthService, NbAuthOAuth2JWTToken } from '@nebular/auth';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from '../../../@core/services/app-config.service';
 
 
 
@@ -14,7 +14,7 @@ export class AuthLoginComponent implements OnDestroy {
   token: NbAuthOAuth2JWTToken;
   private destroy$ = new Subject<void>();
 
-  constructor(private authService: NbAuthService, private config:ConfigService<Record<string, any>>,) {
+  constructor(private authService: NbAuthService, private config:AppConfigService,) {
     this.login();
     this.authService.onTokenChange()
       .pipe(takeUntil(this.destroy$))

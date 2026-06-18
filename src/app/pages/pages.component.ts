@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 // import { NbAccessChecker } from '@nebular/security';
 import { NbMenuItem } from '@nebular/theme';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from '../@core/services/app-config.service';
 
 import { MENU_ITEMS } from './pages-menu';
 import { NbAccessChecker } from '@nebular/security';
@@ -30,7 +30,7 @@ export class PagesComponent implements OnInit {
   userRoles: string[];
   constructor(
      private accessChecker: NbAccessChecker,
-    private configService: ConfigService<Record<string, any>>,
+    private configService: AppConfigService,
     private auth: NbAuthService,
     private translateService: TranslateService,
     private sharedService: SharedService

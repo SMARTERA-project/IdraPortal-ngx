@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import { HttpClient } from '@angular/common/http';
-import { ConfigService } from 'ngx-config-json';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { AppConfigService } from '../../@core/services/app-config.service';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Datalet } from '../data-catalogue/model/datalet';
@@ -30,7 +30,7 @@ export class CataloguesServiceService {
   private mqaEndpoint;
   private mqaDockerEndpoint;
 
-  constructor(private config:ConfigService<Record<string, any>> ,private http:HttpClient,
+  constructor(private config:AppConfigService ,private http:HttpClient,
     private toastr: NbToastrService,
     private translateService: TranslateService) {
       this.apiEndpoint=this.config.config["idra_base_url"];
@@ -99,8 +99,11 @@ export class CataloguesServiceService {
   }
 
   getRemoteCatalogueDatasetCount(url: string, nodeType: string, apiKey: string = ''): Observable<any> {
-    const apiKeyParam = apiKey ? `&apiKey=${encodeURIComponent(apiKey)}` : '';
-    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue/datasetCount?url=${encodeURIComponent(url)}&nodeType=${encodeURIComponent(nodeType)}${apiKeyParam}`);
+    // Send the API key as a header so it never lands in URLs, proxy/access logs or history.
+    const options = apiKey
+      ? { headers: new HttpHeaders().set('X-Catalogue-ApiKey', apiKey) }
+      : {};
+    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue/datasetCount?url=${encodeURIComponent(url)}&nodeType=${encodeURIComponent(nodeType)}`, options);
   }
 	//getRemoteNodes
   getRemoteNodesJson():Observable<any>{

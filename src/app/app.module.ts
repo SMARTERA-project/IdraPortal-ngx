@@ -7,7 +7,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClient, HttpHeaders, HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { ConfigModule } from 'ngx-config-json';
 import { CoreModule } from './@core/core.module';
 import { ThemeModule } from './@theme/theme.module';
 import { AppRoutingModule } from './app-routing.module';
@@ -33,23 +32,28 @@ import { MarkdownModule } from 'ngx-markdown';
 import { RouterModule } from '@angular/router';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { provideCodeEditor } from '@ngstack/code-editor';
-import { NbAuthModule,  NbOAuth2AuthStrategy, NbOAuth2ClientAuthMethod, NbOAuth2GrantType, NbOAuth2ResponseType } from '@nebular/auth';
+import { NbAuthModule,  NbOAuth2AuthStrategy, NbOAuth2ClientAuthMethod, NbOAuth2GrantType, NbOAuth2ResponseType, NbTokenStorage } from '@nebular/auth';
 import { OidcJWTToken } from './pages/auth/oidc/oidc';
 import { TokenInterceptor } from './pages/auth/services/token.interceptor';
+import { NbTokenSessionStorage } from './pages/auth/services/nb-token-session-storage';
 import { HttpErrorInterceptor } from './@core/interceptors/http-error.interceptor';
 import { SUPPRESS_GLOBAL_ERROR_HEADER } from './@core/services/error.model';
 import { JwtHelperService, JwtModule } from '@auth0/angular-jwt';
 import { Observable } from 'rxjs';
 import { SmartEraOverlayContainerAdapter } from './@theme/overlay/smartera-overlay-container-adapter';
-class GenericConfig<T> {
-  constructor(public config: T) {}
-}
 
-const URL = 'https://raw.githubusercontent.com/OPSILab/IdraPortal-ngx-Translations';
-const DEFAULT_AUTH_PROFILE = 'oidc';
-const DEFAULT_CLIENT_ID = 'data-platform';
+// Runtime config (assets/env.js sets window.__env before the bundles load).
+// These module-scope values seed NbAuthModule/TranslateModule at definition
+// time; AppComponent re-applies the OAuth options from AppConfigService.
+const ENV: Record<string, any> = (typeof window !== 'undefined' && (window as any).__env) || {};
+
+const URL = ENV['translations_base_url'] || 'https://raw.githubusercontent.com/OPSILab/IdraPortal-ngx-Translations';
+const DEFAULT_AUTH_PROFILE = ENV['authProfile'] || 'oidc';
+const DEFAULT_CLIENT_ID = ENV['client_id'] || 'data-platform';
 const DEFAULT_CLIENT_SECRET = '';
-const DEFAULT_BASE_ENDPOINT = 'http://localhost/auth/realms/smartera/protocol/openid-connect';
+const DEFAULT_BASE_ENDPOINT =
+  `${ENV['keyCloakBaseURL'] || 'http://localhost:8180'}/auth/realms/` +
+  `${ENV['keyCloakRealmName'] || 'smartera'}/protocol/openid-connect`;
 
 export class CustomTranslateLoader implements TranslateLoader {
 
@@ -88,10 +92,6 @@ export class CustomTranslateLoader implements TranslateLoader {
     CoreModule.forRoot(),
     ThemeModule.forRoot(),
     MarkdownModule.forRoot(),
-    ConfigModule.forRoot({
-      pathToConfig: 'assets/config.json',
-      configType: GenericConfig
-    }),
     TranslateModule.forRoot({
       fallbackLang: 'en',
       loader: {
@@ -160,6 +160,8 @@ export class CustomTranslateLoader implements TranslateLoader {
   ],
   providers: [
     NbSidebarService,
+    // Persist the Nebular auth token in sessionStorage (not localStorage).
+    { provide: NbTokenStorage, useClass: NbTokenSessionStorage },
     provideHttpClient(withInterceptorsFromDi()),
     provideCodeEditor(),
     {

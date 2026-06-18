@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { NbAuthService, NbAuthResult } from '@nebular/auth';
 import { Router } from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from '../../../@core/services/app-config.service';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 
@@ -20,7 +20,7 @@ export class AuthCallbackComponent implements OnDestroy {
   constructor(
     private authService: NbAuthService,
     private router: Router,
-    private config:ConfigService<Record<string, any>>,
+    private config:AppConfigService,
     public translateService: TranslateService,
     private http: HttpClient,
   ) {
@@ -32,8 +32,9 @@ export class AuthCallbackComponent implements OnDestroy {
             // Ensure Idra provisions the authenticated user in DB (JIT provisioning happens on /administration/*).
             const idraBaseUrl = this.config.config["idra_base_url"];
             if (idraBaseUrl) {
+              // Fire-and-forget: NOT bound to destroy$, otherwise the navigateByUrl below
+              // destroys this component and aborts the request before provisioning completes.
               this.http.get(`${idraBaseUrl}/Idra/api/v1/administration/me`)
-                .pipe(takeUntil(this.destroy$))
                 .subscribe({
                   next: (me: any) => {
                     try {

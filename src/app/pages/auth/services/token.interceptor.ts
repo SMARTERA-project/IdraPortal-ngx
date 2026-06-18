@@ -6,19 +6,26 @@ import {
   HttpInterceptor
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { NbAuthOAuth2JWTToken, NbAuthOAuth2Token, NbAuthService } from '@nebular/auth';
-import { switchMap, tap } from 'rxjs/operators';
-import { ConfigService } from 'ngx-config-json';
+import { NbAuthOAuth2JWTToken, NbAuthService } from '@nebular/auth';
+import { finalize, shareReplay, switchMap } from 'rxjs/operators';
+import { AppConfigService } from '../../../@core/services/app-config.service';
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
 
-  constructor(public auth: NbAuthService, private config: ConfigService<Record<string, any>>) {}
+  // Shared refresh observable so concurrent expired requests trigger a single /token call.
+  private refreshInFlight$?: Observable<NbAuthOAuth2JWTToken>;
+
+  constructor(public auth: NbAuthService, private config: AppConfigService) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
+    // Public Idra endpoints that must NOT carry an Authorization header.
     const skipAuthEndpoints = [
       '/oauth2/token',
       '/openid-connect/token',
+      // BFF token exchange: login/refresh must NOT carry a Bearer header
+      // (and must not recurse through the refresh logic below).
+      '/administration/oauth/token',
       '/api/menu-blocks',
       '/public/dashboards',
       '/Idra/api/v1/client/downloadFromUri',
@@ -28,31 +35,18 @@ export class TokenInterceptor implements HttpInterceptor {
       return next.handle(req);
     }
 
-    // if (req.url.includes('/IdraPortal-ngx-Translations')) {
-    //   const clonedReq = req.clone({
-    //     headers: req.headers.delete('Authorization')
-    //   });
-    //   console.log('Request to IdraPortal-ngx-Translations, removing Authorization header.');
-    //   return next.handle(clonedReq);
-    // }
-
     if (skipAuthEndpoints.some((endpoint) => req.url.includes(endpoint))) {
       return next.handle(req);
     }
 
-
-    /*if( (req.url.indexOf('/api/v1/') > -1 
-      || req.url.indexOf('/home') > -1 
-      || req.url.indexOf('/login') > -1 
-      || req.url.indexOf('/static') > -1) &&  this.config.config["authenticationMethod"].toLowerCase() === "keycloak") {
-      let crsftoken = localStorage.getItem('crsftoken');
-      let headers = req.headers;
-      headers = headers.set("X-CSRF-TOKEN", crsftoken || "");
-      req = req.clone({ headers: headers });
-      console.log('Request to API v1, home, login, or static, adding CSRF token.');
+    // Allowlist: only attach the Bearer token to requests targeting the Idra backend.
+    // Everything else (MQA service, the i18n CDN, datalet hosts, arbitrary remote
+    // catalogue URLs) must never receive the user's Keycloak token.
+    const idraBaseUrl = this.config.config['idra_base_url'];
+    if (!idraBaseUrl || !req.url.startsWith(idraBaseUrl)) {
       return next.handle(req);
-    }*/
-    
+    }
+
     return this.auth.getToken().pipe(
       switchMap((token: NbAuthOAuth2JWTToken) => {
         const accessToken = token?.getValue?.() || undefined;
@@ -67,11 +61,7 @@ export class TokenInterceptor implements HttpInterceptor {
 
         // Access token still valid: attach header, no /token call needed.
         if (tokenIsValid) {
-          let newHeaders = req.headers;
-          if (!req.url.includes('/IdraPortal-ngx-Translations')) {
-            newHeaders = newHeaders.set('Authorization', `Bearer ${accessToken}`);
-          }
-          return next.handle(req.clone({ headers: newHeaders }));
+          return next.handle(this.withAuth(req, accessToken));
         }
 
         // Access token expired: only attempt /token refresh if refresh_token is still valid.
@@ -79,24 +69,32 @@ export class TokenInterceptor implements HttpInterceptor {
           return next.handle(req);
         }
 
-        return this.auth.isAuthenticatedOrRefresh().pipe(
-          switchMap(() => this.auth.getToken().pipe(
-            switchMap((x: NbAuthOAuth2JWTToken) => {
-              const t =
-                x.getValue?.() ||
-                x.getPayload()?.access_token ||
-                sessionStorage.getItem('token') ||
-                undefined;
-              let newHeaders = req.headers;
-              if (t && !req.url.includes('/IdraPortal-ngx-Translations')) {
-                newHeaders = newHeaders.set('Authorization', `Bearer ${t}`);
-              }
-              return next.handle(req.clone({ headers: newHeaders }));
-            })
-          ))
+        return this.refreshToken().pipe(
+          switchMap((x: NbAuthOAuth2JWTToken) => {
+            const t = x?.getValue?.() || (x?.getPayload() as any)?.access_token || undefined;
+            return next.handle(t ? this.withAuth(req, t) : req);
+          })
         );
       })
     );
+  }
+
+  private withAuth(req: HttpRequest<any>, token: string | undefined): HttpRequest<any> {
+    if (!token) {
+      return req;
+    }
+    return req.clone({ headers: req.headers.set('Authorization', `Bearer ${token}`) });
+  }
+
+  private refreshToken(): Observable<NbAuthOAuth2JWTToken> {
+    if (!this.refreshInFlight$) {
+      this.refreshInFlight$ = this.auth.isAuthenticatedOrRefresh().pipe(
+        switchMap(() => this.auth.getToken() as Observable<NbAuthOAuth2JWTToken>),
+        finalize(() => { this.refreshInFlight$ = undefined; }),
+        shareReplay(1),
+      );
+    }
+    return this.refreshInFlight$;
   }
 
   private static isJwtNotExpired(jwt: string | undefined | null): boolean {

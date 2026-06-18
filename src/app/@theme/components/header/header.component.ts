@@ -9,7 +9,7 @@ import { Subject } from 'rxjs';
 import { UserClaims } from '../../../pages/auth/oidc/oidc';
 import { Router } from '@angular/router';
 import { OidcUserInformationService } from '../../../pages/auth/services/oidc-user-information.service';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from '../../../@core/services/app-config.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NbAuthJWTToken, NbAuthService } from '@nebular/auth';
 import { Observable } from 'rxjs';
@@ -78,7 +78,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
               private themeService: NbThemeService,
               private userService: OidcUserInformationService,
               private layoutService: LayoutService,
-              private configService: ConfigService<Record<string, any>>,
+              private configService: AppConfigService,
               @Inject(NB_WINDOW) private window,
               private breakpointService: NbMediaBreakpointsService,
               private router: Router,

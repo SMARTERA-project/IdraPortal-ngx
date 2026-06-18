@@ -10,7 +10,7 @@ import { Router, RouterModule } from '@angular/router';
 import { SharedService } from '../../services/shared.service';
 import { ODMSCatalogueComplete } from '../../data-catalogue/model/odmscataloguecomplete';
 import { TranslateService } from '@ngx-translate/core';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from '../../../@core/services/app-config.service';
 import { NbCardModule } from '@nebular/theme';
 import { TranslateModule } from '@ngx-translate/core';
 import { OidcUserInformationService } from '../../auth/services/oidc-user-information.service';
@@ -327,7 +327,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 		private router: Router,
 		public translation: TranslateService,
 		private sharedService: SharedService,
-		private config:ConfigService<Record<string, any>>,
+		private config:AppConfigService,
 		private oidcUserInformationService: OidcUserInformationService
 	  ) {
 		// Ensure CB_enabled is a real boolean (config value may be a string URL)

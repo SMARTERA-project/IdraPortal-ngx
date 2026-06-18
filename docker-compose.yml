@@ -1,12 +1,24 @@
-# version: "3.1"
- 
+# Standalone example. The portal is normally run from the master stack in
+# Idra/docker/docker-compose.yml. Runtime configuration comes from PORTAL_*
+# environment variables: at container startup /docker-entrypoint.d/40-generate-env.sh
+# renders them into assets/env.js (no config.json volume needed).
+#
 # services:
- 
-  # beopen-dashboard:
-  #   image: idraopendata/idra-portal:v1.1.0
-  #   restart: always
-  #   ports:
-  #     - '127.0.0.1:4200:80'
-  #   volumes:
-  #     - ./config.json:/usr/share/nginx/html/assets/config.json
-  #     - ./nginx.conf:/etc/nginx/conf.d/default.conf
+#
+#   portal:
+#     build:
+#       context: .
+#       dockerfile: ./Dockerfile
+#       args:
+#         BUILD_CONFIGURATION: docker
+#         BASE_HREF: /
+#     restart: always
+#     ports:
+#       - '127.0.0.1:4200:80'
+#     environment:
+#       - PORTAL_IDRA_BASE_URL=http://localhost:8080
+#       - PORTAL_MQA_BASE_URL=http://localhost:8000
+#       - PORTAL_KEYCLOAK_BASE_URL=http://localhost:8180
+#       - PORTAL_KEYCLOAK_REALM=smartera
+#       - PORTAL_DASHBOARD_BASE_URL=http://localhost:4200
+#       - PORTAL_CLIENT_ID=data-platform

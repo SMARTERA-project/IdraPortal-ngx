@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { NbGlobalPhysicalPosition, NbToastrService } from '@nebular/theme';
-import { ConfigService } from 'ngx-config-json';
+import { AppConfigService } from '../../@core/services/app-config.service';
 import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
@@ -14,7 +14,7 @@ export class MqaService {
   constructor(
     private http: HttpClient,
     private toastr: NbToastrService,
-    private config:ConfigService<Record<string, any>>,
+    private config:AppConfigService,
     private translateService: TranslateService
   ) {
     this.mqaEndpoint=this.config.config["mqa_base_url"];

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
+import { map, switchMap, take } from 'rxjs/operators';
 import { OidcJWTToken, UserClaims } from '../oidc/oidc';
 import { NbAuthService } from '@nebular/auth';
 import { JwtHelperService } from '@auth0/angular-jwt';
@@ -52,16 +53,53 @@ export class OidcUserInformationService {
   }
 
   getRole(): Observable<string[]> {
-    return this.user
-    ? (
-        this.user.roles != undefined
-        ? of(this.user.roles.map(role => role.toUpperCase()))
-              : (this.user.realm_access != undefined && this.user.realm_access.roles != undefined
-              ? of(this.user.realm_access.roles.map(role => role.toUpperCase()))
-              : of(['IDRA_USER'])
-          )
-      )
-    : of(['ANONYMOUS']);
+    // Derive the role from the auth token rather than the `this.user` snapshot:
+    // on a hard reload / deep-link the snapshot may not be populated yet, which
+    // previously bounced a legitimate admin to '/'.
+    //
+    // isAuthenticatedOrRefresh() triggers a silent /token refresh when the access
+    // token has expired but the refresh_token is still valid, THEN we read the
+    // (refreshed) token. Without this, the short-lived access token expiring made
+    // rolesFromToken() return ANONYMOUS and the AdminGuard kicked the user out
+    // after a few minutes / on reload, even though the session was still alive.
+    return this.authService.isAuthenticatedOrRefresh().pipe(
+      switchMap(() => this.authService.getToken()),
+      take(1),
+      map(token => this.rolesFromToken(token)),
+    );
+  }
+
+  private rolesFromToken(token: any): string[] {
+    if (!token || typeof token.isValid !== 'function' || !token.isValid()) {
+      return ['ANONYMOUS'];
+    }
+
+    let claims: UserClaims | undefined;
+    if (typeof token.getAccessTokenPayload === 'function') {
+      claims = token.getAccessTokenPayload() as UserClaims;
+    } else {
+      try {
+        const payloadSource = typeof token.getPayload === 'function' ? token.getPayload() : undefined;
+        const accessToken: string | undefined = payloadSource?.access_token
+          || (typeof token.getValue === 'function' ? token.getValue() : undefined);
+        if (accessToken && accessToken.split('.').length === 3) {
+          claims = this.jwtHelper.decodeToken(accessToken) as UserClaims;
+        }
+      } catch {
+        // ignore decode errors
+      }
+    }
+
+    if (!claims) {
+      return ['IDRA_USER'];
+    }
+    if (claims.roles != undefined) {
+      return claims.roles.map(role => role.toUpperCase());
+    }
+    if (claims.realm_access != undefined && claims.realm_access.roles != undefined) {
+      return claims.realm_access.roles.map(role => role.toUpperCase());
+    }
+    return ['IDRA_USER'];
   }
 
   getUser(): Observable<UserClaims> {

@@ -62,7 +62,6 @@
     "marked": "^16.0.0",
     "monaco-editor": "^0.54.0",
     "nebular-icons": "1.1.0",
-    "ngx-config-json": "^0.3.0",
     "ngx-echarts": "^20.0.2",
     "ngx-markdown": "^20.1.0",
     "ngx-owl-carousel-o": "^20.0.1",
