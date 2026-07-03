@@ -3,7 +3,7 @@
 ARG NODE_VERSION=24.11.0-alpine
 ARG NGINX_VERSION=latest
 ARG BUILD_CONFIGURATION=production
-ARG BASE_HREF=/
+ARG BASE_HREF=/Idraportal/
 
 FROM node:${NODE_VERSION} as builder
 RUN mkdir -p /app
