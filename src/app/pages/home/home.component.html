@@ -139,7 +139,7 @@
                     <nb-list>
                       @for (category of dcatThemes | slice:0:4; track $index) {<nb-list-item>
                       <button nbButton ghost status="primary" (click)="searchCategory(category)">
-                        <img [src]="'assets/dcat_themes_icon/' + category.icon + '.svg'" class="category-img"> {{ category.text }}
+                        <img [src]="'assets/dcat_themes_icon/' + category.icon + '.svg'" class="category-img"> {{ category.key | translate }}
                       </button>
                       </nb-list-item>}
                   </nb-list>
@@ -148,7 +148,7 @@
                   <nb-list>
                       @for (category of dcatThemes | slice:4:8; track $index) {<nb-list-item>
                       <button nbButton ghost status="primary" (click)="searchCategory(category)">
-                        <img [src]="'assets/dcat_themes_icon/' + category.icon + '.svg'" class="category-img"> {{ category.text }}
+                        <img [src]="'assets/dcat_themes_icon/' + category.icon + '.svg'" class="category-img"> {{ category.key | translate }}
                       </button>
                       </nb-list-item>}
                   </nb-list>
@@ -157,7 +157,7 @@
                   <nb-list>
                       @for (category of dcatThemes | slice:8:13; track $index) {<nb-list-item>
                       <button nbButton ghost status="primary" (click)="searchCategory(category)">
-                        <img [src]="'assets/dcat_themes_icon/' + category.icon + '.svg'" class="category-img"> {{ category.text }}
+                        <img [src]="'assets/dcat_themes_icon/' + category.icon + '.svg'" class="category-img"> {{ category.key | translate }}
                       </button>
                       </nb-list-item>}
                   </nb-list>

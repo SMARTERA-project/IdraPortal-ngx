@@ -36,7 +36,7 @@
 
       @for (facet of searchResponse.facets; track $index) {<nb-card status="primary">
         <nb-card-header class="d-flex justify-content-between">
-          {{facet.displayName}}
+          {{ facetTitleKey(facet) | translate }}
           @if (facet.values.length>10) {<span class="d-flex flex-row-reverse">
             @if (getFacetsLimit(facet.displayName.toLowerCase())==10) {<nb-icon icon="arrowhead-down-outline" (click)="setFacetsLimit(facet.displayName.toLowerCase(),facet.values.length)" nbTooltip="{{ 'DATALET_SHOW_ALL' | translate }}"></nb-icon>} @else { @if (getFacetsLimit(facet.displayName.toLowerCase())>10) {<nb-icon icon="arrowhead-up-outline" (click)="setFacetsLimit(facet.displayName.toLowerCase(),10)" nbTooltip="{{ 'DATALET_SHOW_TOP_10' | translate }}"></nb-icon>} }
           </span>}
@@ -44,7 +44,13 @@
         <nb-card-body>
           <nb-list class="no-border">
             @for (item of (filterFacets(facet.search_parameter,facet.values) | slice:0:getFacetsLimit(facet.displayName.toLowerCase())); track $index) {<nb-list-item class="p-1 no-border">
-              <a href="javascript:void(0)" (click)="getDatasetByFacet(facet.search_parameter,item.search_value)">{{item.facet}}</a>
+              <a href="javascript:void(0)" (click)="getDatasetByFacet(facet.search_parameter,item.search_value)">
+                @if (themeFacetKey(facet.search_parameter, item.search_value); as themeKey) {
+                  {{ themeKey | translate }} ({{ facetCount(item.facet) }})
+                } @else {
+                  {{ item.facet }}
+                }
+              </a>
             </nb-list-item>}
           </nb-list>
         </nb-card-body>

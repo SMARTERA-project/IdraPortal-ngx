@@ -47,10 +47,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public idraUserLanguage: string;
   public readonly materialTheme$: Observable<boolean>;
   public languages = [];
+  // `key` is the i18n key; empty string means show `name` verbatim (e.g. the SmartEra brand name).
   public themes = [
     {
       value: 'material-smartera',
       name: 'SmartEra',
+      key: '',
     },
     // {
     //   value: 'default',
@@ -59,10 +61,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     {
       value: 'dark',
       name: 'Dark',
+      key: 'THEME_DARK',
     },
     {
       value: 'cosmic',
       name: 'Cosmic',
+      key: 'THEME_COSMIC',
     },
     // {
     //   value: 'corporate',

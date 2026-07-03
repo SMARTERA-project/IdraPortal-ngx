@@ -247,19 +247,20 @@ export class HomeComponent implements OnInit, OnDestroy {
 	// 	{value:"TECH",icon:"tech",text:"Technology"},
 	// 	{value:"TRAN",icon:"tran",text:"Transport"}];
 
-	dcatThemes=[{value:"Agriculture, fisheries, forestry and food",icon:"agri",text:"Agriculture"}, //maybe ?
-		{value:"Economy and finance",icon:"econ",text:"Economy"}, //ok
-		{value:"Education, culture and sport",icon:"educ",text:"Education"}, //not ok -> ok
-		{value:"Energy",icon:"ener",text:"Energy"}, //ok
-		{value:"Environment",icon:"envi",text:"Environment"}, //ok
-		{value:"Government and public sector",icon:"gove",text:"Government"}, //ok
-		{value:"Health",icon:"heal",text:"Health"}, //maybe ?
-		{value:"International issues",icon:"intr",text:"International"}, //maybe ?
-		{value:"Justice, legal system and public safety",icon:"just",text:"Justice"}, //not ok -> ok
-		{value:"Regions and cities",icon:"regi",text:"Regions"}, //ok
-		{value:"Population and society",icon:"soci",text:"Population"}, //ok
-		{value:"Science and technology",icon:"tech",text:"Technology"}, //ok
-		{value:"Transport",icon:"tran",text:"Transport"}]; //ok
+	// `key` is the i18n key (translated via IdraPortal-ngx-Translations); `text` is the untranslated fallback.
+	dcatThemes=[{value:"Agriculture, fisheries, forestry and food",icon:"agri",text:"Agriculture",key:"AGRICULTURE"},
+		{value:"Economy and finance",icon:"econ",text:"Economy",key:"ECONOMY"},
+		{value:"Education, culture and sport",icon:"educ",text:"Education",key:"EDUCATION"},
+		{value:"Energy",icon:"ener",text:"Energy",key:"ENERGY"},
+		{value:"Environment",icon:"envi",text:"Environment",key:"ENVIRONMENT"},
+		{value:"Government and public sector",icon:"gove",text:"Government",key:"GOVERNMENT"},
+		{value:"Health",icon:"heal",text:"Health",key:"HEALTH"},
+		{value:"International issues",icon:"intr",text:"International",key:"INTERNATIONAL"},
+		{value:"Justice, legal system and public safety",icon:"just",text:"Justice",key:"JUSTICE"},
+		{value:"Regions and cities",icon:"regi",text:"Regions",key:"REGIONS"},
+		{value:"Population and society",icon:"soci",text:"Population",key:"SOCIETY"},
+		{value:"Science and technology",icon:"tech",text:"Technology",key:"TECHNOLOGY"},
+		{value:"Transport",icon:"tran",text:"Transport",key:"TRANSPORTATION"}];
 
     
   ngOnInit(): void {

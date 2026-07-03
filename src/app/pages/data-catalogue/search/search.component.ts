@@ -383,4 +383,50 @@ export class SearchComponent implements OnInit, OnDestroy {
       return values.filter(x => usedValues.indexOf(x.search_value) < 0);
     }
   }
+
+  // i18n keys for the filter card titles, keyed by the stable backend `search_parameter`.
+  // Titles reuse existing keys where available; the rest are FACET_* keys in the translations repo.
+  private readonly facetTitleKeys: { [searchParameter: string]: string } = {
+    HVDCategory: 'FACET_HVD_CATEGORIES',
+    tags: 'HOME_TAGS',
+    distributionFormats: 'FACET_FORMATS',
+    distributionLicenses: 'FACET_LICENSES',
+    catalogues: 'Catalogues',
+    datasetThemes: 'HOME_CATEGORIES',
+  };
+
+  // DCAT theme abbreviation (facet search_value) -> i18n key (already present in the translations repo).
+  private readonly dcatThemeKeys: { [abbr: string]: string } = {
+    AGRI: 'AGRICULTURE',
+    ECON: 'ECONOMY',
+    EDUC: 'EDUCATION',
+    ENER: 'ENERGY',
+    ENVI: 'ENVIRONMENT',
+    GOVE: 'GOVERNMENT',
+    HEAL: 'HEALTH',
+    INTR: 'INTERNATIONAL',
+    JUST: 'JUSTICE',
+    REGI: 'REGIONS',
+    SOCI: 'SOCIETY',
+    TECH: 'TECHNOLOGY',
+    TRAN: 'TRANSPORTATION',
+  };
+
+  // Returns the i18n key for a facet card title, falling back to the raw backend displayName.
+  facetTitleKey(facet: { search_parameter?: string; displayName?: string }): string {
+    return this.facetTitleKeys[facet?.search_parameter] || facet?.displayName || '';
+  }
+
+  // Returns the i18n key for a DCAT theme facet value, or null if it should be shown raw.
+  // Only the "Categories" facet (datasetThemes) is translated; other facet values are dataset data.
+  themeFacetKey(searchParameter: string, searchValue: string): string | null {
+    if (searchParameter !== 'datasetThemes' || !searchValue) return null;
+    return this.dcatThemeKeys[searchValue.toUpperCase()] || null;
+  }
+
+  // Extracts the trailing "(N)" count the backend appends to a facet label (e.g. "Environment (5)" -> "5").
+  facetCount(facetLabel: string): string {
+    const match = /\((\d+)\)\s*$/.exec(facetLabel || '');
+    return match ? match[1] : '';
+  }
 }
