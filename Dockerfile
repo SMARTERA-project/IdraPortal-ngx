@@ -3,7 +3,7 @@
 ARG NODE_VERSION=24.11.0-alpine
 ARG NGINX_VERSION=latest
 ARG BUILD_CONFIGURATION=production
-ARG BASE_HREF=/IdraPortal/
+ARG BASE_HREF=/
 
 FROM node:${NODE_VERSION} as builder
 RUN mkdir -p /app
@@ -13,7 +13,9 @@ COPY package-lock.json /app
  
 RUN npm install
 COPY . /app
-RUN npm run build -- --configuration ${BUILD_CONFIGURATION} --base-href ${BASE_HREF}
+# Guard against an empty BASE_HREF (e.g. `--build-arg BASE_HREF=`): an empty
+# --base-href produces `<base href>` and breaks asset resolution on deep routes.
+RUN npm run build -- --configuration ${BUILD_CONFIGURATION} --base-href "${BASE_HREF:-/}"
 
 FROM nginx:${NGINX_VERSION}
 EXPOSE 80
