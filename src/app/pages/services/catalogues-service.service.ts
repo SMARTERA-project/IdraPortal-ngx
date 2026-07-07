@@ -208,15 +208,12 @@ export class CataloguesServiceService {
   }
   
   async submitAnalisysJSON(id: String): Promise<any> {
-    let json = {
-      "file_url": `${this.mqaDockerEndpoint}/Idra/api/v1/client/dcat-ap/dump/`+id,
-    }
+    // Routed through the Idra backend (not MQA directly) so MqaManager reuses the
+    // catalogue's stored mqaAnalysisId and appends to the same 5-entry MQA history
+    // instead of creating a new analysis each time; it also handles title, forceDump
+    // and self-healing when the referenced analysis was deleted.
     return new Promise((resolve,reject)=>{
-      this.http.post(`${this.mqaEndpoint}/submit/auth`, json, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+      this.http.post(`${this.apiEndpoint}/Idra/api/v1/administration/catalogues/${id}/mqa`, {})
       .subscribe({
         next: (data: any) => {
           this.toastr.show(this.translateService.instant('TOAST_ANALYSIS_SUBMITTED'), this.translateService.instant('TOAST_SUCCESS'), { status: 'success', duration: 3000, destroyByClick: true, position: NbGlobalPhysicalPosition.TOP_RIGHT});

@@ -28,9 +28,6 @@ export class MqaService {
       this.http.get(`${this.mqaEndpoint}/get/analisys/` + id, {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Methods': 'GET',
         },
       })
       .subscribe({
@@ -52,9 +49,6 @@ export class MqaService {
       this.http.delete(`${this.mqaEndpoint}/delete/element/` + id, {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Methods': 'GET',
         },
       })
       .subscribe({
@@ -72,9 +66,6 @@ export class MqaService {
       this.http.post(`${this.mqaEndpoint}/get/analisys/` + id, jsonData, {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Methods': 'POST',
         },
       })
       .subscribe({
@@ -89,9 +80,6 @@ export class MqaService {
       this.http.get(`${this.mqaEndpoint}/get/all`, {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Methods': 'GET',
         },
       })
       .subscribe({
@@ -107,9 +95,6 @@ export class MqaService {
       this.http.post(`${this.mqaEndpoint}/submit`, json, {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-          'Access-Control-Allow-Methods': 'POST',
         },
       })
       .subscribe({

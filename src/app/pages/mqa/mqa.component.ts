@@ -167,7 +167,9 @@ export class MqaComponent implements OnInit {
       // }
       this.data_list.push(
         {
-          data: { Title: element.title, Type: element.type, Date: element.creation_date, Action: element.id }
+          // show the date of the latest finished analysis (updated on each re-analysis),
+          // falling back to the document creation date for older records
+          data: { Title: element.title, Type: element.type, Date: element.last_analysis_date || element.creation_date, Action: element.id }
         })
     });
     this.dataSource_list = this.dataSourceBuilder_list.create(this.data_list);
@@ -210,6 +212,10 @@ export class MqaComponent implements OnInit {
       this.option.series[0].data[0].value = value;
       this.option.series[0].data[1].value = 100 - value;
       this.option.series[1].data[0].value = value;
+      // ngx-echarts only re-renders when the `option` reference changes; the
+      // updates above mutate it in place, so hand it a fresh reference to force
+      // the gauge to refresh when switching between analyses.
+      this.option = { ...this.option };
     }
   }
 
