@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common';
 import { MqaService } from '../services/mqa.service';
 import { NbAccordionModule, NbButtonModule, NbCardModule, NbFormFieldModule, NbGlobalPhysicalPosition, NbIconModule, NbInputModule, NbSortDirection, NbSortRequest, NbTableModule, NbThemeService, NbToastrService, NbTooltipModule, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule, NbUserModule } from '@nebular/theme';
 import { NgxEchartsModule } from 'ngx-echarts';
@@ -168,13 +168,24 @@ export class MqaComponent implements OnInit {
       this.data_list.push(
         {
           // show the date of the latest finished analysis (updated on each re-analysis),
-          // falling back to the document creation date for older records
-          data: { Title: element.title, Type: element.type, Date: element.last_analysis_date || element.creation_date, Action: element.id }
+          // falling back to the document creation date for older records, rendered in
+          // the viewer's local timezone
+          data: { Title: element.title, Type: element.type, Date: this.toLocalDate(element.last_analysis_date || element.creation_date), Action: element.id }
         })
     });
     this.dataSource_list = this.dataSourceBuilder_list.create(this.data_list);
   }
 
+  // MQA stores analysis timestamps in UTC ("dd/MM/yyyy HH:mm:ss"). Render them in
+  // the viewer's local timezone (from the browser/computer settings). formatDate
+  // with no explicit timezone uses the local one.
+  private toLocalDate(utc: string): string {
+    if (!utc) return utc;
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})[ T](\d{2}):(\d{2}):(\d{2})/.exec(utc);
+    if (!m) return utc;
+    const d = new Date(Date.UTC(+m[3], +m[2] - 1, +m[1], +m[4], +m[5], +m[6]));
+    return formatDate(d, 'dd/MM/yyyy HH:mm:ss', 'en-US');
+  }
 
   onFileChange(files: FileList) {
     this.fileToUpload = files.item(0);
