@@ -9,9 +9,9 @@ import { defineConfig, devices } from '@playwright/test';
  *  - admin-chromium:  Admin features (depends on setup, reuses saved session)
  *
  * Assumes:
- * - Angular app running on http://localhost:4200
+ * - Angular app running on http://localhost:4200 (override via APP_BASE_URL)
  * - Idra backend available on http://localhost:8080
- * - Keycloak available on https://dx-lab.it
+ * - Keycloak reachable at the host in KEYCLOAK_HOST (default: dx-lab.eng.it)
  */
 export default defineConfig({
   testDir: './tests',

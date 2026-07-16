@@ -9,13 +9,36 @@ import { chromium, FullConfig } from '@playwright/test';
  *  3. Wait for callback back to Angular (token exchange happens in-browser)
  *  4. Save storage state to .auth/admin.json
  *
- * Credentials are read from environment variables:
- *   KEYCLOAK_USERNAME  (default: m.sajeva@hyperteck.it)
- *   KEYCLOAK_PASSWORD  (default: Eht2023!)
+ * Configuration is read from environment variables:
+ *   KEYCLOAK_USERNAME  Keycloak login username (required, no default)
+ *   KEYCLOAK_PASSWORD  Keycloak login password (required, no default)
+ *   KEYCLOAK_HOST      host of the Keycloak/OIDC server (default: dx-lab.eng.it)
+ *   APP_BASE_URL       base URL of the Angular app under test (default: http://localhost:4200)
  */
+
+/** Escapes a string so it can be used as a literal inside a RegExp. */
+function toHostPattern(host: string): RegExp {
+  return new RegExp(host.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+}
+
 async function globalSetup(_config: FullConfig) {
-  const username = process.env.KEYCLOAK_USERNAME ?? 'm.sajeva@hyperteck.it';
-  const password = process.env.KEYCLOAK_PASSWORD ?? 'Eht2023!';
+  const username = process.env.KEYCLOAK_USERNAME;
+  const password = process.env.KEYCLOAK_PASSWORD;
+  if (!username || !password) {
+    throw new Error(
+      '[global-setup] KEYCLOAK_USERNAME and KEYCLOAK_PASSWORD must be set '
+      + '(e.g. via a .env file or CI secrets) to run the authenticated E2E suite.'
+    );
+  }
+
+  // Host of the Keycloak server, used to detect the redirect to the login page.
+  // Configurable so the suite is not tied to a specific deployment domain.
+  const keycloakHost = process.env.KEYCLOAK_HOST ?? 'dx-lab.eng.it';
+  const keycloakHostPattern = toHostPattern(keycloakHost);
+
+  // Base URL of the Angular app under test (should match Playwright's baseURL).
+  const appBaseUrl = process.env.APP_BASE_URL ?? 'http://localhost:4200';
+  const appHostPattern = toHostPattern(new URL(appBaseUrl).host);
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
@@ -28,16 +51,16 @@ async function globalSetup(_config: FullConfig) {
   // Navigate to Angular login trigger — AuthLoginComponent calls authService.authenticate()
   // which redirects the browser to Keycloak
   console.log('[global-setup] Navigating to /keycloak-auth...');
-  await page.goto('http://localhost:4200/keycloak-auth');
+  await page.goto(`${appBaseUrl}/keycloak-auth`);
 
   // Wait for Angular to bootstrap and trigger the Keycloak redirect
   await page.waitForLoadState('networkidle', { timeout: 25000 });
   console.log('[global-setup] After networkidle, URL:', page.url());
 
   // If not yet on Keycloak, wait longer for the redirect
-  if (!page.url().includes('dx-lab.it')) {
+  if (!page.url().includes(keycloakHost)) {
     console.log('[global-setup] Waiting for Keycloak redirect...');
-    await page.waitForURL(/dx-lab\.it/, { timeout: 30000 });
+    await page.waitForURL(keycloakHostPattern, { timeout: 30000 });
   }
   console.log('[global-setup] Keycloak login page:', page.url());
 
@@ -48,13 +71,13 @@ async function globalSetup(_config: FullConfig) {
   await page.click('#kc-login');
 
   // Wait for Angular callback to process token and redirect to /pages
-  await page.waitForURL(/localhost:4200/, { timeout: 20000 });
+  await page.waitForURL(appHostPattern, { timeout: 20000 });
   await page.waitForLoadState('networkidle', { timeout: 20000 });
   console.log('[global-setup] Post-login URL:', page.url());
 
   // Verify we're authenticated (not redirected back to Keycloak or login)
   const finalUrl = page.url();
-  if (finalUrl.includes('dx-lab.it') || finalUrl.includes('/keycloak-auth')) {
+  if (finalUrl.includes(keycloakHost) || finalUrl.includes('/keycloak-auth')) {
     // Dump localStorage for debugging
     const lsKeys = await page.evaluate(() => Object.keys(localStorage));
     console.log('[global-setup] localStorage keys:', lsKeys);
