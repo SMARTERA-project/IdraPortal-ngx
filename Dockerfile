@@ -3,9 +3,16 @@
 ARG NODE_VERSION=24.11.0-alpine
 ARG NGINX_VERSION=latest
 ARG BUILD_CONFIGURATION=production
-ARG BASE_HREF=/Idraportal/
+ARG BASE_HREF=/IdraPortal/
 
-FROM node:${NODE_VERSION} as builder
+FROM node:${NODE_VERSION} AS builder
+# Re-declare the build args inside this stage. ARGs declared before the first
+# FROM are only in scope for FROM interpolation, NOT inside a build stage. Without
+# these lines ${BUILD_CONFIGURATION} and ${BASE_HREF} are empty here, so the build
+# silently falls back to --base-href "/" and the app breaks under /IdraPortal/.
+# Declaring them without a value inherits the global defaults above.
+ARG BUILD_CONFIGURATION
+ARG BASE_HREF
 RUN mkdir -p /app
 WORKDIR /app
 COPY package.json /app
