@@ -194,7 +194,8 @@ getLevel(nodeType: string): string {
 			case 'SPOD':
 			case 'WEB':
 			case 'OPENDATASOFT':
-			case 'JUNAR':	
+			case 'JUNAR':
+			case 'GEONETWORK_ISO19139':	
 				//node.federationLevel='LEVEL_2';
 				return "2";
 			case 'DCATDUMP':

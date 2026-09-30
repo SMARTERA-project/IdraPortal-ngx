@@ -72,7 +72,7 @@ export class AddCatalogueComponent implements OnInit {
 	ODMSCategories = [{text:'Municipality',value:'Municipality'},{text:'Province',value:'Province'},{text:'Private Institution',value:'Private Institution'},{text:'Public Body',value:'Public Body'},{text:'Region',value:'Region'}];
 	updatePeriods=[{text:'-',value:"1"},{text:'1 hour',value:"3600"},{text:'1 day',value:"86400"},{text:'1 week',value:"604800"}];    
 	activeMode = [{text:'Yes',value:true},{text:'No',value:false}];
-	nodeType = [{text:'CKAN',value:'CKAN'},{text:'SOCRATA',value:'SOCRATA'},{text:'NATIVE',value:'NATIVE'},{text:'NGSILD_CB',value:'NGSILD_CB'},{text:'WEB',value:'WEB'},{text:'DCATDUMP',value:'DCATDUMP'},{text:'DKAN',value:'DKAN'},{text:'JUNAR',value:'JUNAR'},{text:'OPENDATASOFT',value:'OPENDATASOFT'},{text:'ORION',value:'ORION'},{text:'SPARQL',value:'SPARQL'},{text:'SPOD',value:'SPOD'},{text:'ZENODO',value:'ZENODO'}];
+	nodeType = [{text:'CKAN',value:'CKAN'},{text:'SOCRATA',value:'SOCRATA'},{text:'NATIVE',value:'NATIVE'},{text:'NGSILD_CB',value:'NGSILD_CB'},{text:'WEB',value:'WEB'},{text:'DCATDUMP',value:'DCATDUMP'},{text:'DKAN',value:'DKAN'},{text:'JUNAR',value:'JUNAR'},{text:'OPENDATASOFT',value:'OPENDATASOFT'},{text:'ORION',value:'ORION'},{text:'SPARQL',value:'SPARQL'},{text:'SPOD',value:'SPOD'},{text:'ZENODO',value:'ZENODO'}, {text:'GEONETWORK_ISO19139',value:'GEONETWORK_ISO19139'},];
   
 	filteredCountries: any[] = [];
 
@@ -719,6 +719,7 @@ export class AddCatalogueComponent implements OnInit {
 			case 'NGSILD_CB':
 			case 'OPATASOFT':
 			case 'JUNAR':
+			case 'GEONETWORK_ISO19139':
 				this.node.federationLevel='LEVEL_2';
 				break;
 			case 'DCATDUMP':

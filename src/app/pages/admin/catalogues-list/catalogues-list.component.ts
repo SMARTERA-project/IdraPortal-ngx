@@ -564,6 +564,7 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 					return "4";
 				case 'OPENDATASOFT':
 				case 'JUNAR':	
+				case 'GEONETWORK_ISO19139':
 					//node.federationLevel='LEVEL_2';
 					return "2";
 				default:
