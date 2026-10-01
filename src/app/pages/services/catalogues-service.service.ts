@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AppConfigService } from '../../@core/services/app-config.service';
+import { SUPPRESS_GLOBAL_ERROR_HEADER } from '../../@core/services/error.model';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Datalet } from '../data-catalogue/model/datalet';
@@ -90,34 +91,37 @@ export class CataloguesServiceService {
   }
 
   //getAllRemCat
+  // Used by the remote catalogues page, which falls back to the bundled list: no global toast.
    getAllRemCat():Observable<any>{
-    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue`);
+    const headers = new HttpHeaders().set(SUPPRESS_GLOBAL_ERROR_HEADER, '1');
+    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue`, { headers });
   }
 
+  // Remote catalogues being offline is expected, not a platform error: the caller
+  // renders the status per row, so suppress the global error toast.
   checkRemoteCatalogueHealth(url: string): Observable<any> {
-    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue/health?url=${encodeURIComponent(url)}`);
+    const headers = new HttpHeaders().set(SUPPRESS_GLOBAL_ERROR_HEADER, '1');
+    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue/health?url=${encodeURIComponent(url)}`, { headers });
   }
 
   getRemoteCatalogueDatasetCount(url: string, nodeType: string, apiKey: string = ''): Observable<any> {
     // Send the API key as a header so it never lands in URLs, proxy/access logs or history.
-    const options = apiKey
-      ? { headers: new HttpHeaders().set('X-Catalogue-ApiKey', apiKey) }
-      : {};
-    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue/datasetCount?url=${encodeURIComponent(url)}&nodeType=${encodeURIComponent(nodeType)}`, options);
+    // Failures are shown per row by the caller, so suppress the global error toast.
+    let headers = new HttpHeaders().set(SUPPRESS_GLOBAL_ERROR_HEADER, '1');
+    if (apiKey) { headers = headers.set('X-Catalogue-ApiKey', apiKey); }
+    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue/datasetCount?url=${encodeURIComponent(url)}&nodeType=${encodeURIComponent(nodeType)}`, { headers });
   }
-	//getRemoteNodes
-  getRemoteNodesJson():Observable<any>{
-    return this.http.get<any>(`${this.apiEndpoint}/catalogue.json`);
-  }
-
   //getSelectedRemCatIdra
+  // An unreachable remote list is expected (the page just hides it): no global toast.
   getSelectedRemCat(id:number):Observable<any>{
-    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue/auth/`+id);
+    const headers = new HttpHeaders().set(SUPPRESS_GLOBAL_ERROR_HEADER, '1');
+    return this.http.get<any>(`${this.apiEndpoint}/Idra/api/v1/administration/remoteCatalogue/auth/`+id, { headers });
   }
 
   //getSelectedRemCatNotIdra
   getSelectedRemCatNotIdra(url: string): Observable<any> {
-    return this.http.get<any>(url).pipe(
+    const headers = new HttpHeaders().set(SUPPRESS_GLOBAL_ERROR_HEADER, '1');
+    return this.http.get<any>(url, { headers }).pipe(
       catchError(() => of(null))
     );
   }

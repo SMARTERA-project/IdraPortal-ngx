@@ -16,8 +16,12 @@
           </div>
           <div class="col-sm-8 col-md-4 col-lg-3 offset-lg-1 offset-md-0 offset-sm-0 d-flex align-items-center gap-1">
             <label class="search-label">{{ 'REMOTE_CATALOGUE_ADMIN_REMOTE_CATALOGUE_LABEL' | translate }}</label>
-            <nb-select placeholder="{{ 'REMOTE_CATALOGUE_ADMIN_JSON_CATALOGUE_PLACEHOLDER' | translate }}">
-              @for (cat of allRemCat; track cat.catalogueName) {<nb-option [value]="cat.catalogueName">{{ cat.catalogueName }}</nb-option>}
+            <nb-select placeholder="{{ 'REMOTE_CATALOGUE_ADMIN_JSON_CATALOGUE_PLACEHOLDER' | translate }}"
+                       [selected]="selectedSourceId" (selectedChange)="onSourceChange($event)"
+                       [disabled]="sourcesLoading" [nbSpinner]="sourcesLoading" nbSpinnerSize="small">
+              @for (src of catalogueSources; track src.id) {
+                <nb-option [value]="src.id">{{ src.id === localSourceId ? (localSourceLabel$ | async) : src.name }}</nb-option>
+              }
             </nb-select>
           </div>
           <div class="col-sm-2 col-md-2 col-lg-2 d-flex align-items-center gap-1">
