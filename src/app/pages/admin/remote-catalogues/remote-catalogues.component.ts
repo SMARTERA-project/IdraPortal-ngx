@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { forkJoin, from, Observable, of, Subscription } from 'rxjs';
-import { catchError, finalize, map, mergeMap, switchMap, tap, toArray } from 'rxjs/operators';
+import { catchError, finalize, map, mergeMap, switchMap, tap, timeout, toArray } from 'rxjs/operators';
 import { NbActionsModule, NbButtonModule, NbCardModule, NbIconModule, NbInputModule, NbSelectModule, NbSortDirection, NbSortRequest, NbSpinnerModule, NbTooltipModule, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule } from '@nebular/theme';
 import { CataloguesServiceService } from '../../services/catalogues-service.service';
 import { ODMSCatalogueInfo } from '../../data-catalogue/model/odmscatalogue-info';
@@ -59,6 +59,7 @@ function saveSource(id: string): void {
 })
 export class RemoteCataloguesComponent implements OnInit, OnDestroy {
 	private static readonly MAX_CONCURRENT_CHECKS = 4;
+	private static readonly REMOTE_LIST_TIMEOUT_MS = 15000;
 	private checkSubscription?: Subscription;
 	
 	cataloguesInfos: Array<ODMSCatalogueInfo>=[]
@@ -79,6 +80,7 @@ export class RemoteCataloguesComponent implements OnInit, OnDestroy {
 	catalogueSources: CatalogueSource[] = [];
 	selectedSourceId: string = LOCAL_SOURCE_ID;
 	sourcesLoading = false;
+	adding = false;
 	readonly localSourceId = LOCAL_SOURCE_ID;
 	localSourceLabel$: Observable<string>;
 	allRemCatJson: any[] = (remoteCatalogueData as any).default ?? (remoteCatalogueData as any);
@@ -141,11 +143,15 @@ export class RemoteCataloguesComponent implements OnInit, OnDestroy {
 
 	private fetchRemoteList(remote: any): Observable<any> {
 		const isIdra = remote.isIdra === true || remote.isIdra === 'true' || remote.isIdra === '1';
+		let request: Observable<any> = of(null);
 		if (isIdra) {
 			// Remote Idra instances are read through the backend, which logs in with the stored credentials.
-			return remote.username ? this.restApi.getSelectedRemCat(remote.id) : of(null);
+			if (remote.username) { request = this.restApi.getSelectedRemCat(remote.id); }
+		} else if (remote.URL) {
+			request = this.restApi.getSelectedRemCatNotIdra(remote.URL);
 		}
-		return remote.URL ? this.restApi.getSelectedRemCatNotIdra(remote.URL) : of(null);
+		// A remote that accepts the connection but never answers must not hold the page hostage.
+		return request.pipe(timeout(RemoteCataloguesComponent.REMOTE_LIST_TIMEOUT_MS));
 	}
 
 	onSourceChange(sourceId: string): void {
@@ -277,17 +283,20 @@ getLevel(nodeType: string): string {
   }
 
   addRemoteCatalogue(index: number){
-	
-	var fd = new FormData();   
+	// Ignore repeated clicks while the POST is in flight: each one would federate a duplicate.
+	if (this.adding) { return; }
+	this.adding = true;
+	var fd = new FormData();
 	fd.append("dump",'');
-	// remove attribute image.imageId from json
-	let object = this.allRemCatJson[index];
+	// Work on a copy: the source list is shared (module singleton / cached remote list).
+	const object = structuredClone(this.allRemCatJson[index]);
 	if (object.image) { delete object.image.imageId; }
 	object.isActive = false;
 	fd.append("node",JSON.stringify(object));
-	this.restApi.addODMSNode(fd).subscribe({
-		next: (infos) =>{
-			console.log("\nCHIAMATA API AGGIUNTA NODO. infos: "+infos);
+	this.restApi.addODMSNode(fd).pipe(
+		finalize(() => { this.adding = false; }),
+	).subscribe({
+		next: () => {
 			this.router.navigate(['/pages/administration/adminCatalogues']);
 		},
 		error: (err) =>{

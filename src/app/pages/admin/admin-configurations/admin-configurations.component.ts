@@ -3,7 +3,6 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CataloguesServiceService } from '../../services/catalogues-service.service';
 import { NbAccordionModule, NbButtonModule, NbCheckboxModule, NbDialogService, NbIconModule, NbInputModule, NbSortDirection, NbSortRequest, NbToastrService, NbTreeGridDataSource, NbTreeGridDataSourceBuilder, NbTreeGridModule } from '@nebular/theme';
-import { Md5 } from 'ts-md5';
 import { PrefixDialogComponent } from './dialog/prefix-dialog/prefix-dialog.component';
 import { RemoteCatalogueDialogComponent } from './dialog/remoteCatalogue-dialog/remoteCatalogue-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
@@ -169,6 +168,7 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
         action: 'ADD'
       },
     }).onClose.subscribe(res => {
+      if (!res) { return; }
       if (res.prefix != 0 && res.namespace != 0) {
         let json = {
           "prefix": res.prefix,
@@ -199,6 +199,7 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
         namespace: namespace
       },
     }).onClose.subscribe(res => {
+      if (!res) { return; }
       if (res.prefix != 0 && res.namespace != 0) {
         let json = {
           "prefix": res.prefix,
@@ -219,6 +220,10 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
         action: 'ADD',
       },
     }).onClose.subscribe(res => {
+      // Dialog dismissed (Esc / backdrop): nothing to save.
+      if (!res) { return; }
+      // Passwords go as entered: the backend AES-encrypts them (and keeps an unchanged stored
+      // value as-is), then decrypts them for the remote login, so hashing here breaks it.
       if (res.catalogueName != 0 && res.catalogueURL != 0 && res.catalogueType != 0) {
         let json = {
           "catalogueName": res.catalogueName,
@@ -232,7 +237,7 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
         }
         if (res.type == true && res.authMethod == 2) {
           json["username"] = res.username;
-          json["password"] = Md5.hashStr(res.password);
+          json["password"] = res.password;
           json["clientID"] = res.clientID;
           json["clientSecret"] = res.clientSecret;
           json["portal"] = res.portalURL;
@@ -260,6 +265,10 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
         portalURL: obj.portal,
       },
     }).onClose.subscribe(res => {
+      // Dialog dismissed (Esc / backdrop): nothing to save.
+      if (!res) { return; }
+      // Passwords go as entered: the backend AES-encrypts them (and keeps an unchanged stored
+      // value as-is), then decrypts them for the remote login, so hashing here breaks it.
       if (res.catalogueName != 0 && res.catalogueURL != 0 && res.catalogueType != 0) {
         let json = {
           "catalogueName": res.catalogueName,
@@ -269,11 +278,11 @@ export class AdminConfigurationsComponent implements OnInit, OnDestroy {
         };
         if (res.type == true && res.authMethod == 1) {
           json["username"] = res.username;
-          json["password"] = Md5.hashStr(res.password);
+          json["password"] = res.password;
         }
         if (res.type == true && res.authMethod == 2) {
           json["username"] = res.username;
-          json["password"] = Md5.hashStr(res.password);
+          json["password"] = res.password;
           json["clientID"] = res.clientID;
           json["clientSecret"] = res.clientSecret;
           json["portal"] = res.portalURL;
