@@ -21,17 +21,17 @@
         </nb-select>}
       </div>
       <div class="col-md-12">
-  @if (authMethod == '1' || authMethod == '2') {<h6 class="jumbotron-heading">{{ 'REMOTE_CATALOG_USERNAME' | translate }}</h6>}
-  @if (authMethod == '1' || authMethod == '2') {<input class="mb-3" type="text" nbInput fullWidth status="primary" placeholder="{{ 'REMOTE_CATALOG_USERNAME' | translate }}" [(ngModel)]="username">}
-  @if (authMethod == '1' || authMethod == '2') {<h6 class="jumbotron-heading">{{ 'REMOTE_CATALOG_PASSWORD' | translate }}</h6>}
-  @if (authMethod == '1' || authMethod == '2') {<input class="mb-3" type="text" nbInput fullWidth status="primary" placeholder="{{ 'REMOTE_CATALOG_PASSWORD' | translate }}" [(ngModel)]="password">}
+  @if (catalogueType == true && (authMethod == '1' || authMethod == '2')) {<h6 class="jumbotron-heading">{{ 'REMOTE_CATALOG_USERNAME' | translate }}</h6>}
+  @if (catalogueType == true && (authMethod == '1' || authMethod == '2')) {<input class="mb-3" type="text" nbInput fullWidth status="primary" placeholder="{{ 'REMOTE_CATALOG_USERNAME' | translate }}" [(ngModel)]="username">}
+  @if (catalogueType == true && (authMethod == '1' || authMethod == '2')) {<h6 class="jumbotron-heading">{{ 'REMOTE_CATALOG_PASSWORD' | translate }}</h6>}
+  @if (catalogueType == true && (authMethod == '1' || authMethod == '2')) {<input class="mb-3" type="text" nbInput fullWidth status="primary" placeholder="{{ 'REMOTE_CATALOG_PASSWORD' | translate }}" [(ngModel)]="password">}
 
-  @if (authMethod == '2') {<h6 class="jumbotron-heading">{{ 'REMOTE_CATALOG_CLIENT_ID' | translate }}</h6>}
-  @if (authMethod == '2') {<input class="mb-3" type="text" nbInput fullWidth status="primary" placeholder="{{ 'REMOTE_CATALOG_CLIENT_ID' | translate }}" [(ngModel)]="clientID">}
-  @if (authMethod == '2') {<h6 class="jumbotron-heading">{{ 'REMOTE_CATALOG_CLIENT_SECRET' | translate }}</h6>}
-  @if (authMethod == '2') {<input class="mb-3" type="text" nbInput fullWidth status="primary" placeholder="{{ 'REMOTE_CATALOG_CLIENT_SECRET' | translate }}" [(ngModel)]="clientSecret">}
-  @if (authMethod == '2') {<h6 class="jumbotron-heading">{{ 'REMOTE_CATALOG_PORTAL_URL' | translate }}</h6>}
-  @if (authMethod == '2') {<input type="text" nbInput fullWidth status="primary" placeholder="{{ 'REMOTE_CATALOG_PORTAL_URL' | translate }}" [(ngModel)]="portalURL">}
+  @if (catalogueType == true && authMethod == '2') {<h6 class="jumbotron-heading">{{ 'REMOTE_CATALOG_CLIENT_ID' | translate }}</h6>}
+  @if (catalogueType == true && authMethod == '2') {<input class="mb-3" type="text" nbInput fullWidth status="primary" placeholder="{{ 'REMOTE_CATALOG_CLIENT_ID' | translate }}" [(ngModel)]="clientID">}
+  @if (catalogueType == true && authMethod == '2') {<h6 class="jumbotron-heading">{{ 'REMOTE_CATALOG_CLIENT_SECRET' | translate }}</h6>}
+  @if (catalogueType == true && authMethod == '2') {<input class="mb-3" type="text" nbInput fullWidth status="primary" placeholder="{{ 'REMOTE_CATALOG_CLIENT_SECRET' | translate }}" [(ngModel)]="clientSecret">}
+  @if (catalogueType == true && authMethod == '2') {<h6 class="jumbotron-heading">{{ 'REMOTE_CATALOG_PORTAL_URL' | translate }}</h6>}
+  @if (catalogueType == true && authMethod == '2') {<input type="text" nbInput fullWidth status="primary" placeholder="{{ 'REMOTE_CATALOG_PORTAL_URL' | translate }}" [(ngModel)]="portalURL">}
       </div>
     </div>
   </nb-card-body>
