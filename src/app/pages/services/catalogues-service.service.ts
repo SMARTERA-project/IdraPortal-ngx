@@ -194,10 +194,12 @@ export class CataloguesServiceService {
       });
   }
 
-  syncRemoteCatalogue(id:string):Promise<any>{
+  // full=true rewrites every dataset, not only the ones changed since the last synchronization
+  syncRemoteCatalogue(id:string, full = false):Promise<any>{
     
     return new Promise((resolve,reject)=>{
-      this.http.post<any>(`${this.apiEndpoint}/Idra/api/v1/administration/catalogues/${id}/synchronize`,null)
+      this.http.post<any>(`${this.apiEndpoint}/Idra/api/v1/administration/catalogues/${id}/synchronize`,null,
+        { params: { full: String(full) } })
       .subscribe({
         next: (data: any) => {
           resolve(data)

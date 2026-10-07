@@ -100,6 +100,7 @@
               @if (canManageAdministration) {
                 <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_SEND_MQA_ANALYSIS' | translate }}" icon="bar-chart-outline" [options]="{ animation: { type: 'zoom' } }" (click)="sendMqaAnalisysCatalogue(row.data[defaultColumns[8]], row.data.index)"></nb-icon>
                 <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_SYNCHRONIZE_CATALOGUE' | translate }}" icon="sync-outline" [options]="{ animation: { type: 'zoom' } }" (click)="syncCatalogue(row.data[defaultColumns[8]], row.data.index)"></nb-icon>
+                <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_FULL_SYNCHRONIZE_CATALOGUE' | translate }}" icon="refresh-outline" [options]="{ animation: { type: 'zoom' } }" (click)="syncCatalogue(row.data[defaultColumns[8]], row.data.index, true)"></nb-icon>
                 <nb-icon nbTooltip="{{ 'MODIFY_CATALOGUE' | translate }}" icon="edit-outline" [options]="{ animation: { type: 'zoom' } }" (click)="modifyCatalogue(row.data[defaultColumns[8]])"></nb-icon>
                 <nb-icon nbTooltip="{{ 'CATALOGUE_LIST_DELETE_CATALOGUE' | translate }}" icon="close-outline" [options]="{ animation: { type: 'zoom' } }" (click)="deleteCatalogue(row.data[defaultColumns[8]], row.data.index)"></nb-icon>
               }

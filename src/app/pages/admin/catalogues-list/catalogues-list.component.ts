@@ -663,10 +663,10 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 		  });
 	}
 
-	syncCatalogue(id : string, index : number){
+	syncCatalogue(id : string, index : number, full = false){
 		if (this.isRowPending(id)) return;
 		this.markPending(id);
-		this.restApi.syncRemoteCatalogue(id)
+		this.restApi.syncRemoteCatalogue(id, full)
 		.finally(() => this.finishAction(id, 5000));
 	}
 
