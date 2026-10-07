@@ -10,14 +10,15 @@
         </nb-tag-list>
         <span class="dataset-found-span"><strong>{{ 'DATALET_DATASETS_FOUND' | translate }}:</strong>
           {{currentDatasets}}</span>
+        @if (hasActiveFilters()) {<button nbButton size="small" status="basic" appearance="ghost" class="mt-2" (click)="clearFilters()">
+          <nb-icon icon="close-circle-outline"></nb-icon>{{ 'DATALET_CLEAR_FILTERS' | translate }}
+        </button>}
       </nb-card-body>
     </nb-card>
   </div>
 
-  @if (searchResponse.count==0) {<div class="d-flex flex-column align-items-center justify-content-center">
-    <h3 class="jumbotron-heading">{{ 'DATALET_NO_DATASET_FOUND' | translate }}</h3>
-  </div>}
-  @if (searchResponse.count>0) {<div class="row">
+  <!-- filters column stays visible with zero results, so a filter that empties the list can be undone -->
+  <div class="row">
     <div class="col-md-3 col-12">
 
       <nb-card status="primary">
@@ -34,7 +35,7 @@
         </nb-card-body>
       </nb-card>
 
-      @for (facet of searchResponse.facets; track $index) {<nb-card status="primary">
+      @for (facet of searchResponse.facets; track $index) { @if (facet.values.length>0) {<nb-card status="primary">
         <nb-card-header class="d-flex justify-content-between">
           {{ facetTitleKey(facet) | translate }}
           @if (facet.values.length>10) {<span class="d-flex flex-row-reverse">
@@ -54,17 +55,20 @@
             </nb-list-item>}
           </nb-list>
         </nb-card-body>
-      </nb-card>}
+      </nb-card>} }
     </div>
     <div class="col-md-9 col-12">
-      <div class="row m-1">
+      @if (searchResponse.count>0) {<div class="row m-1">
         <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
-      </div>
+      </div>}
       <div class="row m-1">
         <nb-tag-list (tagRemove)="onFilterRemove($event)">
-          @for (filter of filtersTags; track $index) {<nb-tag appearance="outline" status="primary" [text]="filter" removable></nb-tag>}
+          @for (chip of filterChips; track $index) {<nb-tag appearance="outline" status="primary" [text]="chip.label" removable></nb-tag>}
         </nb-tag-list>
       </div>
+      @if (searchResponse.count==0 && !loading) {<div class="d-flex flex-column align-items-center justify-content-center">
+        <h3 class="jumbotron-heading">{{ 'DATALET_NO_DATASET_FOUND' | translate }}</h3>
+      </div>}
       <!-- results -->
   @for (dataset of (searchResponse.results | paginate: { itemsPerPage: searchRequest.rows || 10, currentPage: page, totalItems: searchResponse.count }); track $index) {<nb-card class="minicard">
         <nb-card-header>
@@ -79,9 +83,9 @@
           </nb-tag-list>
         </nb-card-footer>
       </nb-card>}
-      <div class="row m-1">
+      @if (searchResponse.count>0) {<div class="row m-1">
         <pagination-controls (pageChange)="pageChanged($event)"></pagination-controls>
-      </div>
+      </div>}
     </div>
-  </div>}
+  </div>
 </div>

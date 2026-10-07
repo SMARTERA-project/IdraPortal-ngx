@@ -17,3 +17,26 @@ nb-list-item {
     padding-left:0;
     padding-top:0;
 }
+
+.breadcrumb-nav ol {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+
+    li {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    li + li::before {
+        content: '/';
+        padding: 0 0.5rem;
+        opacity: 0.6;
+    }
+
+    li[aria-current] {
+        opacity: 0.8;
+    }
+}

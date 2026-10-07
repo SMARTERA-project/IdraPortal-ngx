@@ -248,19 +248,20 @@ export class HomeComponent implements OnInit, OnDestroy {
 	// 	{value:"TRAN",icon:"tran",text:"Transport"}];
 
 	// `key` is the i18n key (translated via IdraPortal-ngx-Translations); `text` is the untranslated fallback.
-	dcatThemes=[{value:"Agriculture, fisheries, forestry and food",icon:"agri",text:"Agriculture",key:"AGRICULTURE"},
-		{value:"Economy and finance",icon:"econ",text:"Economy",key:"ECONOMY"},
-		{value:"Education, culture and sport",icon:"educ",text:"Education",key:"EDUCATION"},
-		{value:"Energy",icon:"ener",text:"Energy",key:"ENERGY"},
-		{value:"Environment",icon:"envi",text:"Environment",key:"ENVIRONMENT"},
-		{value:"Government and public sector",icon:"gove",text:"Government",key:"GOVERNMENT"},
-		{value:"Health",icon:"heal",text:"Health",key:"HEALTH"},
-		{value:"International issues",icon:"intr",text:"International",key:"INTERNATIONAL"},
-		{value:"Justice, legal system and public safety",icon:"just",text:"Justice",key:"JUSTICE"},
-		{value:"Regions and cities",icon:"regi",text:"Regions",key:"REGIONS"},
-		{value:"Population and society",icon:"soci",text:"Population",key:"SOCIETY"},
-		{value:"Science and technology",icon:"tech",text:"Technology",key:"TECHNOLOGY"},
-		{value:"Transport",icon:"tran",text:"Transport",key:"TRANSPORTATION"}];
+	// value is the EU data-theme identifier: the backend indexes and searches themes by identifier
+	dcatThemes=[{value:"AGRI",icon:"agri",text:"Agriculture",key:"AGRICULTURE"},
+		{value:"ECON",icon:"econ",text:"Economy",key:"ECONOMY"},
+		{value:"EDUC",icon:"educ",text:"Education",key:"EDUCATION"},
+		{value:"ENER",icon:"ener",text:"Energy",key:"ENERGY"},
+		{value:"ENVI",icon:"envi",text:"Environment",key:"ENVIRONMENT"},
+		{value:"GOVE",icon:"gove",text:"Government",key:"GOVERNMENT"},
+		{value:"HEAL",icon:"heal",text:"Health",key:"HEALTH"},
+		{value:"INTR",icon:"intr",text:"International",key:"INTERNATIONAL"},
+		{value:"JUST",icon:"just",text:"Justice",key:"JUSTICE"},
+		{value:"REGI",icon:"regi",text:"Regions",key:"REGIONS"},
+		{value:"SOCI",icon:"soci",text:"Population",key:"SOCIETY"},
+		{value:"TECH",icon:"tech",text:"Technology",key:"TECHNOLOGY"},
+		{value:"TRAN",icon:"tran",text:"Transport",key:"TRANSPORTATION"}];
 
     
   ngOnInit(): void {

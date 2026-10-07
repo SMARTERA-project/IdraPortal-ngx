@@ -1,4 +1,11 @@
 <div [nbSpinner]="loading" nbSpinnerSize="giant" nbSpinnerStatus="primary">
+    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+        <ol>
+            <li><a routerLink="/pages/home">{{ 'Home' | translate }}</a></li>
+            <li><a routerLink="/pages/datasets">{{ 'Data Catalogue' | translate }}</a></li>
+            <li aria-current="page">{{dataset.title}}</li>
+        </ol>
+    </nav>
     <nb-card>
         <nb-card-header>
             <h3>{{dataset.title}}</h3>

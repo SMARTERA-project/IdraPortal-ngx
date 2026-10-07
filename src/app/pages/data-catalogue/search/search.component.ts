@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { NbCardModule, NbSpinnerModule, NbTagComponent, NbTagInputAddEvent, NbTagModule, NbListModule, NbIconModule, NbCheckboxModule, NbTooltipModule } from '@nebular/theme';
+import { NbCardModule, NbSpinnerModule, NbTagComponent, NbTagInputAddEvent, NbTagModule, NbListModule, NbIconModule, NbCheckboxModule, NbTooltipModule, NbButtonModule } from '@nebular/theme';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { NbEvaIconsModule } from '@nebular/eva-icons';
 import { DCATDataset,FormatCount } from '../model/dcatdataset';
@@ -9,12 +9,13 @@ import { SearchFilter } from '../model/search-filter';
 import { SearchRequest } from '../model/search-request';
 import { SearchResult } from '../model/search-result';
 import { DataCataglogueAPIService } from '../services/data-cataglogue-api.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MetadataLocalizationService } from '../services/metadata-localization.service';
+import { SearchStateService } from '../services/search-state.service';
 
 @Component({
   standalone: true,
@@ -30,6 +31,7 @@ import { MetadataLocalizationService } from '../services/metadata-localization.s
     NbIconModule,
     NbCheckboxModule,
     NbTooltipModule,
+    NbButtonModule,
     NbEvaIconsModule,
     // Third-party
     NgxPaginationModule,
@@ -48,9 +50,17 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   constructor(private restApi: DataCataglogueAPIService,
     public router: Router,
+    private route: ActivatedRoute,
     public translation: TranslateService,
     private metadataLocalizationService: MetadataLocalizationService,
-  ) { }
+    private searchState: SearchStateService,
+  ) {
+    // read here: the navigation that created the component is still current only during construction
+    this.isHistoryNavigation = this.router.currentNavigation()?.trigger === 'popstate';
+  }
+
+  // true when the page is reached with the browser back/forward buttons
+  private readonly isHistoryNavigation: boolean;
 
   loading = false;
 
@@ -61,12 +71,18 @@ export class SearchComponent implements OnInit, OnDestroy {
   currentDatasets: number = 0;
 
   filters: Array<string> = [];
-  filtersTags: Array<string>= [];
+  // active filters shown as removable chips above the results
+  filterChips: Array<{ field: string; value: string; label: string }> = [];
   isHVD_Dataset: boolean | null = null; // null = show all
   private languageSubscription?: Subscription;
   private selectedLanguage = 'en';
+  // Query string the current search started from; null until the initial query params are processed.
+  private searchOrigin: string | null = null;
+  // Window scroll offset to reapply once the restored results are rendered.
+  private pendingScrollY: number | null = null;
 
   ngOnDestroy() {
+    this.saveSearchState(window.scrollY);
     this.languageSubscription?.unsubscribe();
   }
 
@@ -93,7 +109,22 @@ export class SearchComponent implements OnInit, OnDestroy {
 
         let searchParam = this.router.routerState.snapshot.root.queryParams
 
-        console.log(searchParam)
+        const savedState = this.searchState.restore(searchParam, this.isHistoryNavigation);
+        if (savedState) {
+          this.searchOrigin = savedState.origin;
+          this.searchRequest = Object.assign(new SearchRequest(), savedState.searchRequest);
+          this.searchRequest.nodes = infos.map(x => x.id);
+          this.filters = savedState.filters || [];
+          this.isHVD_Dataset = savedState.isHVD_Dataset ?? null;
+          this.page = savedState.page || 1;
+          this.totalDatasets = savedState.totalDatasets || 0;
+          this.facetLimits = savedState.facetLimits || {};
+          this.pendingScrollY = savedState.scrollY || null;
+          this.searchDataset();
+          return;
+        }
+        this.searchOrigin = SearchStateService.originOf(searchParam);
+
         if(searchParam['advancedSearch'] == 'true'){
           this.searchRequest = JSON.parse(searchParam['params']);
           // Update the local HVD state from the search request
@@ -104,17 +135,17 @@ export class SearchComponent implements OnInit, OnDestroy {
           this.searchDataset(true)
         } else{
           if(searchParam['type']!=undefined){
-            this.searchRequest.filters.push(new SearchFilter('catalogues',searchParam.search_value))
+            this.searchRequest.filters.push(new SearchFilter('catalogues',SearchFilter.joinValues([searchParam.search_value])))
             this.searchDataset(true)
           }
           else if(searchParam['name']!=undefined){
             // this.filtersTags.push(searchParam.name)
-            this.searchRequest.filters.push(new SearchFilter('tags',searchParam.search_value))
+            this.searchRequest.filters.push(new SearchFilter('tags',SearchFilter.joinValues([searchParam.search_value])))
             this.searchDataset(true)
           }
           else if(searchParam['text']!=undefined){
             // this.filtersTags.push(searchParam.value)
-            this.searchRequest.filters.push(new SearchFilter('datasetThemes',searchParam.search_value))
+            this.searchRequest.filters.push(new SearchFilter('datasetThemes',SearchFilter.joinValues([searchParam.search_value])))
             this.searchDataset(true)
           }
           else if(searchParam['tags']!=undefined){
@@ -166,27 +197,27 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   searchDataset(isFirst = false): Observable<SearchResult> {
-    console.log(this.searchRequest)
-    console.log(this.filters)
-    console.log(this.filtersTags)
-    console.log(this.searchResponse)
-    console.log(this.searchResponse.facets)
     this.loading = true
-    this.filtersTags = [];
+    this.filterChips = [];
+    this.filters = [];
     this.searchRequest.language = this.selectedLanguage;
+    this.keywordFilter();
 
     this.searchRequest.filters.forEach(x => {
-      if (x.field == 'ALL' && x.value != '') {
-        let values = x.value.split(',')
-        values.forEach(y => this.filtersTags.push(y))
+      if (x.field == 'ALL') {
+        SearchFilter.splitValues(x.value).forEach(y => {
+          this.filterChips.push({ field: x.field, value: y, label: y });
+          this.filters.push(y);
+        })
       } else if (x.value != '') {
-        let values = x.value.split(',')
-        let name = x.field;
-        let index = this.searchResponse.facets.findIndex(x => x.search_parameter === name)
-        if (index >= 0) {
-          name = this.searchResponse.facets[index].displayName;
-        }
-        values.forEach(y => this.filtersTags.push(name + ": " + y))
+        // label from the i18n keys, not from the facets of the previous response (empty on first search)
+        const titleKey = this.facetTitleKeys[x.field];
+        const name = titleKey ? this.translation.instant(titleKey) : x.field;
+        SearchFilter.splitValues(x.value).forEach(y => {
+          const themeKey = this.themeFacetKey(x.field, y);
+          const valueLabel = themeKey ? this.translation.instant(themeKey) : y;
+          this.filterChips.push({ field: x.field, value: y, label: name + ': ' + valueLabel });
+        })
       }
     })
 
@@ -197,8 +228,15 @@ export class SearchComponent implements OnInit, OnDestroy {
         if(isFirst){
           this.totalDatasets = this.searchResponse.count;  
         }
+        this.saveSearchState();
         this.searchResponse.results.map((x: DCATDataset) => { this.processDataset(x) })
         this.loading = false;
+        if (this.pendingScrollY !== null) {
+          const scrollY = this.pendingScrollY;
+          this.pendingScrollY = null;
+          // wait for the results to be rendered before scrolling
+          setTimeout(() => window.scrollTo(0, scrollY));
+        }
       },
       error: (err)=>{
         console.log(err);
@@ -213,16 +251,60 @@ export class SearchComponent implements OnInit, OnDestroy {
     });
   }
 
-  onTagRemove(tagToRemove: NbTagComponent): void {
-    this.filters = this.filters.filter(x => x != tagToRemove.text);
-    this.searchRequest.filters.map(x => {
-      if (x.field == 'ALL') {
-        let a = x.value.split(',');
-        x.value = a.filter(b => b != tagToRemove.text).join(',');
-      }
-    })
+  hasActiveFilters(): boolean {
+    return this.filterChips.length > 0 || this.isHVD_Dataset !== null;
+  }
 
-    this.searchDataset()
+  clearFilters(): void {
+    const request = new SearchRequest();
+    request.nodes = this.cataloguesInfos.map(x => x.id);
+    request.rows = this.searchRequest.rows;
+    this.searchRequest = request;
+    this.filters = [];
+    this.isHVD_Dataset = null;
+    this.page = 1;
+    this.facetLimits = {};
+    // drop entry-point query params (e.g. ?tags=...) so they are not reapplied on the next visit
+    this.searchOrigin = '';
+    this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
+    this.searchDataset();
+  }
+
+  private saveSearchState(scrollY = 0): void {
+    if (this.searchOrigin === null) return;
+    this.searchState.save({
+      origin: this.searchOrigin,
+      searchRequest: this.searchRequest,
+      filters: this.filters,
+      isHVD_Dataset: this.isHVD_Dataset,
+      page: this.page,
+      totalDatasets: this.totalDatasets,
+      facetLimits: this.facetLimits,
+      scrollY,
+    });
+  }
+
+  onTagRemove(tagToRemove: NbTagComponent): void {
+    this.removeKeyword(tagToRemove.text);
+  }
+
+  // The free-text keywords live in the 'ALL' filter; the backend rejects a request without it,
+  // so it is emptied but never removed.
+  private keywordFilter(): SearchFilter {
+    let filter = this.searchRequest.filters.find(x => x.field == 'ALL');
+    if (!filter) {
+      filter = new SearchFilter();
+      this.searchRequest.filters.unshift(filter);
+    }
+    return filter;
+  }
+
+  private removeKeyword(keyword: string): void {
+    const filter = this.keywordFilter();
+    filter.value = SearchFilter.joinValues(SearchFilter.splitValues(filter.value).filter(x => x != keyword));
+    this.page = 1;
+    this.searchRequest.start = 0;
+    this.searchDataset();
   }
 
   onTagAdd({ value, input }: NbTagInputAddEvent): void {
@@ -231,18 +313,10 @@ export class SearchComponent implements OnInit, OnDestroy {
       if (input != undefined)
         input.nativeElement.value = ''
       if (value) {
-        this.filters.push(value);
-        this.searchRequest.filters.map(x => {
-          if (x.field == 'ALL') {
-            if (x.value != '') {
-              let a = x.value.split(',');
-              a.push(value)
-              x.value = a.join(',');
-            } else {
-              x.value = value;
-            }
-          }
-        })
+        const filter = this.keywordFilter();
+        filter.value = SearchFilter.joinValues([...SearchFilter.splitValues(filter.value), value]);
+        this.page = 1;
+        this.searchRequest.start = 0;
         this.searchDataset()
       }
     }, 50);
@@ -327,23 +401,22 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   onFilterRemove(filter: NbTagComponent): void {
-    let tmp = filter.text.split(': ');
-    if (tmp == null || tmp.length < 2) {
-      tmp = ["ALL", filter.text];
+    const chip = this.filterChips.find(x => x.label == filter.text);
+    if (!chip) return;
+    if (chip.field == 'ALL') {
+      this.removeKeyword(chip.value);
+      return;
     }
-    let name = tmp[0];
-    let facetIndex = this.searchResponse.facets.findIndex(x => x.displayName == name)
-    if (facetIndex >= 0) {
-      name = this.searchResponse.facets[facetIndex].search_parameter;
-    }
-    console.log("filters: ", this.searchRequest.filters);
-    console.log("filterTags: ", this.filtersTags);
-    let index = this.searchRequest.filters.findIndex(x => x.field == name);
+    const value = chip.value;
+    let index = this.searchRequest.filters.findIndex(x => x.field == chip.field);
+    if (index < 0) return;
     let filterTag = this.searchRequest.filters[index];
-    this.searchRequest.filters[index].value = filterTag.value.split(',').filter(x => x != tmp[1]).join(',');
-    if (this.searchRequest.filters[index].value == '') {
+    filterTag.value = SearchFilter.joinValues(SearchFilter.splitValues(filterTag.value).filter(x => x != value));
+    if (filterTag.value == '') {
       this.searchRequest.filters.splice(index, 1);
     }
+    this.page = 1;
+    this.searchRequest.start = 0;
     this.searchDataset()
   }
 
@@ -352,13 +425,11 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.searchRequest.start = 0;
     let index = this.searchRequest.filters.findIndex(x => x.field === search_parameter);
     if (index < 0) {
-      this.searchRequest.filters.push(new SearchFilter(search_parameter, newValue));
+      this.searchRequest.filters.push(new SearchFilter(search_parameter, SearchFilter.joinValues([newValue])));
     } else {
       let filter = this.searchRequest.filters[index];
       this.searchRequest.filters.splice(index, 1)
-      let tmp = filter.value.split(',');
-      tmp.push(newValue);
-      filter.value = tmp.join(',');
+      filter.value = SearchFilter.joinValues([...SearchFilter.splitValues(filter.value), newValue]);
       this.searchRequest.filters.push(filter);
     }
     this.searchDataset()
@@ -368,7 +439,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     let index = this.searchRequest.filters.findIndex(x => x.field === search_parameter);
     if (index < 0) return true;
     else {
-      let values = this.searchRequest.filters[index].value.split(',');
+      let values = SearchFilter.splitValues(this.searchRequest.filters[index].value);
       let vIndex = values.findIndex(x => x === value)
       if (vIndex < 0) return true;
     }
@@ -379,7 +450,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     let index = this.searchRequest.filters.findIndex(x => x.field === search_parameter);
     if (index < 0) return values;
     else {
-      let usedValues = this.searchRequest.filters[index].value.split(',');
+      let usedValues = SearchFilter.splitValues(this.searchRequest.filters[index].value);
       return values.filter(x => usedValues.indexOf(x.search_value) < 0);
     }
   }

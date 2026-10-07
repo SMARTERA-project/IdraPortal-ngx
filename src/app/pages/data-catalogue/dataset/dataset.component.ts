@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NbActionsModule, NbCardModule, NbDialogService, NbListModule, NbSpinnerModule, NbTagModule, NbToastrService, NbTooltipModule } from '@nebular/theme';
 import { AppConfigService } from '../../../@core/services/app-config.service';
 import { DataletIframeComponent } from '../datalet-iframe/datalet-iframe.component';
@@ -25,6 +25,7 @@ import { MetadataLocalizationService } from '../services/metadata-localization.s
   imports: [
     CommonModule,
     TranslateModule,
+    RouterModule,
     // Nebular
     NbSpinnerModule,
     NbCardModule,
@@ -82,6 +83,8 @@ export class DatasetComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
+    // the layout scrolls the window: open the dataset from the top, not at the search list offset
+    window.scrollTo(0, 0);
     let dataletOrigin = new URLParse(this.dataletBaseUrl);
     if(location.origin==dataletOrigin.origin){
       this.samedomain=true;
