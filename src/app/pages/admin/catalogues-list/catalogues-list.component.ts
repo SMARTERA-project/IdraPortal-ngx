@@ -673,8 +673,21 @@ export class CataloguesListComponent implements OnInit, OnDestroy {
 	deleteCatalogue(id : string, index : number){
 		if (this.isRowPending(id)) return;
 		this.markPending(id);
-		this.restApi.deleteCatalogue(id)
-		.finally(() => this.finishAction(id, 1000));
+		this.dialogService.open(ShowcaseDialogComponent, {
+			context: {
+				title: this.translation.instant('CATALOGUE_LIST_DELETE_CATALOGUE'),
+				body: this.translation.instant('CATALOGUE_LIST_DELETE_CATALOGUE_MESSAGE'),
+				showKeepDatasets: false,
+			},
+		}).onClose.subscribe(res => {
+			if (res === 0) {
+				this.restApi.deleteCatalogue(id)
+				.finally(() => this.finishAction(id, 1000));
+			} else {
+				this.clearPending(id);
+				this.loadCatalogue();
+			}
+		});
 	}
 
 	activeCatalogue(id : string, index : number, active: boolean){

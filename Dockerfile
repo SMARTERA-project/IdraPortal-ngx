@@ -1,6 +1,6 @@
 # Build arguments for version overrides
 # Override via: docker build --build-arg NODE_VERSION=x.y.z --build-arg NGINX_VERSION=x.y
-ARG NODE_VERSION=24.11.0-alpine
+ARG NODE_VERSION=24.22.1-alpine
 ARG NGINX_VERSION=latest
 ARG BUILD_CONFIGURATION=production
 ARG BASE_HREF=/IdraPortal/

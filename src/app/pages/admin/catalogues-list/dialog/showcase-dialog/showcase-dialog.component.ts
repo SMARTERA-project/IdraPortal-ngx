@@ -12,6 +12,7 @@ export class ShowcaseDialogComponent {
 
   @Input() title: string;
   @Input() body: string;
+  @Input() showKeepDatasets = true;
 
   constructor(protected ref: NbDialogRef<ShowcaseDialogComponent>) {}
 

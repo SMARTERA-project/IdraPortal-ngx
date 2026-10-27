@@ -55,7 +55,7 @@
             <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef class="col-w-70">{{ 'CATALOGUE_LIST_STATUS' | translate }}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row">
               @if (row.data['synchLock'] == 'PERIODIC' || row.data[defaultColumns[4]] == 'LOADING') {<nb-icon class="rotate_icon" icon="loader-outline"></nb-icon>} @else {
-                @if (row.data[defaultColumns[4]] === 'OFFLINE') {<nb-icon icon="close-outline" class="text-danger"></nb-icon>} @else {<nb-icon icon="checkmark-outline" class="text-success"></nb-icon>}
+                @if (!row.data[customColumn] || row.data[defaultColumns[4]] === 'OFFLINE') {<nb-icon icon="close-outline" class="text-danger"></nb-icon>} @else {<nb-icon icon="checkmark-outline" class="text-success"></nb-icon>}
               }
             </td>
           </ng-container>

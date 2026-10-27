@@ -1,0 +1,10 @@
+# The image installs its own Linux dependencies (npm install) and builds dist itself.
+node_modules
+dist
+.angular
+.git
+.auth
+.vscode
+e2e
+playwright-report
+test-results
